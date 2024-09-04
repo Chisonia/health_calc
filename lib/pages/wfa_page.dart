@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-class WeightForAgePage extends StatelessWidget {
+class WeightForAgePage extends StatefulWidget {
   final String selectedAgeFormat;
   final ValueChanged<String?> onAgeFormatChanged;
   final String age;
   final ValueChanged<String> onAgeChanged;
-  final String expectedWeightRange;
 
   const WeightForAgePage({
     super.key,
@@ -13,8 +12,61 @@ class WeightForAgePage extends StatelessWidget {
     required this.onAgeFormatChanged,
     required this.age,
     required this.onAgeChanged,
-    required this.expectedWeightRange,
   });
+
+  @override
+  WeightForAgePageState createState() => WeightForAgePageState();
+}
+
+class WeightForAgePageState extends State<WeightForAgePage> {
+  late String selectedAgeFormat;
+  String expectedWeightAge = 'Expected Weight Range will appear here.'; // default text
+
+  @override
+  void initState() {
+    super.initState();
+    selectedAgeFormat = widget.selectedAgeFormat.isEmpty ? '' : widget.selectedAgeFormat;
+  }
+
+  void _calculateExpectedWeight(String age) {
+    if (age.isNotEmpty) {
+      final double? ageValue = double.tryParse(age);
+      if (ageValue != null) {
+        if (selectedAgeFormat == 'Months' && ageValue < 12) {
+          // For children aged 0 to 11 months
+          final expectedWeight = (ageValue + 9) / 2;
+          setState(() {
+            expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
+          });
+        } else if (selectedAgeFormat == 'Years' && ageValue > 0 && ageValue <= 4 ) {
+          // For children 1 year to 4 years
+          final expectedWeight = 2 * (ageValue + 5);
+          setState(() {
+            expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
+          });
+        } else if(selectedAgeFormat == 'Years' && ageValue > 4 && ageValue <= 14 ){
+          // For children 5 year to 14 years
+        final expectedWeight = 4 * ageValue;
+        setState(() {
+          expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
+        });
+
+        }else {
+          setState(() {
+            expectedWeightAge = "Please enter a valid age for the selected format.";
+          });
+        }
+      } else {
+        setState(() {
+          expectedWeightAge = "Invalid age input.";
+        });
+      }
+    } else {
+      setState(() {
+        expectedWeightAge = "Please enter a child's age.";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +109,7 @@ class WeightForAgePage extends StatelessWidget {
                     ),
                   ),
                   TextSpan(
-                    text: "'Years' for 1 year and older.",
+                    text: "'Years' for 1 year to 14 years.",
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.black87,
@@ -81,10 +133,10 @@ class WeightForAgePage extends StatelessWidget {
               ),
               child: DropdownButton<String>(
                 isExpanded: true,
-                value: selectedAgeFormat.isNotEmpty ? selectedAgeFormat : null,
+                value: selectedAgeFormat.isEmpty ? null : selectedAgeFormat,
                 icon: const Icon(
-                    Icons.arrow_drop_down_circle_outlined,
-                    color: Colors.deepPurple
+                  Icons.arrow_drop_down_circle_outlined,
+                  color: Colors.deepPurple,
                 ),
                 elevation: 16,
                 style: const TextStyle(color: Colors.black, fontSize: 16),
@@ -92,7 +144,15 @@ class WeightForAgePage extends StatelessWidget {
                   "Select Age Format",
                   style: TextStyle(color: Colors.black54),
                 ),
-                onChanged: (value){
+                onChanged: (String? value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedAgeFormat = value;
+                      // Recalculate expected weight with the current age
+                      _calculateExpectedWeight(widget.age);
+                    });
+                    widget.onAgeFormatChanged(value);
+                  }
                 },
                 items: <String>['Months', 'Years']
                     .map<DropdownMenuItem<String>>((String value) {
@@ -117,7 +177,10 @@ class WeightForAgePage extends StatelessWidget {
               ),
               child: Center(
                 child: TextField(
-                  onChanged: onAgeChanged,
+                  onChanged: (value) {
+                    widget.onAgeChanged(value);
+                    _calculateExpectedWeight(value); // Calculate weight when age is changed
+                  },
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.done,
                   decoration: const InputDecoration(
@@ -142,9 +205,7 @@ class WeightForAgePage extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  expectedWeightRange.isNotEmpty
-                      ? expectedWeightRange
-                      : "Expected Weight Range will appear here.", // Default message
+                  expectedWeightAge,
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,

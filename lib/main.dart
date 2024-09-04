@@ -28,7 +28,6 @@ class HealthCalcApp extends StatelessWidget {
           onAgeFormatChanged: (String? value) {},
           age: '',
           onAgeChanged: (String value) {},
-          expectedWeightRange: '',
         ),
         '/ga-edd': (context) => GestationalAgePage(
           selectedOption: '',

@@ -66,7 +66,6 @@ class HomePage extends StatelessWidget {
                             onAgeFormatChanged: (String? value) {},
                             age: '',
                             onAgeChanged: (String value) {},
-                            expectedWeightRange: '',
                           ),
                         ),
                       );
