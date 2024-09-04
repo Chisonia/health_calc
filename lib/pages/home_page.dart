@@ -78,16 +78,7 @@ class HomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => GestationalAgePage(
-                            selectedOption: '',
-                            onOptionChanged: (String? value) {},
-                            selectedDate: '', // You can update this later
-                            onSelectDate: (String selectedDate) {
-                              // Store the selected date string here
-                            },
-                            gestationalAge: '',
-                            expectedDeliveryDate: '',
-                          ),
+                          builder: (context) => const GestationalAgePage(),
                         ),
                       );
                     },

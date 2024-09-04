@@ -29,16 +29,7 @@ class HealthCalcApp extends StatelessWidget {
           age: '',
           onAgeChanged: (String value) {},
         ),
-        '/ga-edd': (context) => GestationalAgePage(
-          selectedOption: '',
-          onOptionChanged: (String? value) {},
-          selectedDate: '',
-          onSelectDate: (String selectedDate) {
-            // Store the selected date string here
-          },
-          gestationalAge: '',
-          expectedDeliveryDate: '',
-        ),
+        '/ga-edd': (context) => const GestationalAgePage(),
         '/next-visit': (context) => NextVisitPage(
           selectedInterval: '',
           onIntervalChanged: (String? value) {},
