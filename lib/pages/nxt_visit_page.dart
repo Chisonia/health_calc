@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+// Global variable to hold the latest appointment date summary
+String recentAppointmentDate = '';
+
 class NextVisitPage extends StatefulWidget {
   final String selectedInterval;
   final ValueChanged<String?> onIntervalChanged;
@@ -40,6 +43,18 @@ class NextVisitPageState extends State<NextVisitPage> {
       case '2 months':
         duration = const Duration(days: 60);
         break;
+      case '3 months':
+        duration = const Duration(days: 90);
+        break;
+      case '1 year':
+        duration = const Duration(days: 365);
+        break;
+      case '3 years':
+        duration = const Duration(days: 1095);
+        break;
+      case '5 years':
+        duration = const Duration(days: 1825);
+        break;
       default:
         duration = const Duration(days: 0);
     }
@@ -47,6 +62,8 @@ class NextVisitPageState extends State<NextVisitPage> {
     DateTime nextAppointment = DateTime.now().add(duration);
     setState(() {
       appointmentDate = DateFormat('EEEE, MMMM d, yyyy').format(nextAppointment);
+      // Update the global variable with the latest appointment date
+      recentAppointmentDate = appointmentDate;
     });
   }
 

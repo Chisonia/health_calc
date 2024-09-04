@@ -1,20 +1,57 @@
 import 'package:flutter/material.dart';
 
-class BMICalculationPage extends StatelessWidget {
-  final String selectedUnit;
-  final ValueChanged<String?> onUnitChanged;
-  final TextEditingController heightController;
-  final TextEditingController weightController;
-  final String bmiResult;
+class BMICalculationPage extends StatefulWidget {
+  const BMICalculationPage({super.key});
 
-  const BMICalculationPage({
-    super.key,
-    required this.selectedUnit,
-    required this.onUnitChanged,
-    required this.heightController,
-    required this.weightController,
-    required this.bmiResult,
-  });
+  @override
+  BMICalculationPageState createState() => BMICalculationPageState();
+}
+
+class BMICalculationPageState extends State<BMICalculationPage> {
+  String selectedUnit = 'Metric (kg/m²)'; // Default unit
+  final TextEditingController heightController = TextEditingController();
+  final TextEditingController weightController = TextEditingController();
+  String bmiResult = '';
+  String bmiInterpretation = '';
+
+  void _calculateBMI() {
+    if (heightController.text.isNotEmpty && weightController.text.isNotEmpty) {
+      final double height = double.parse(heightController.text);
+      final double weight = double.parse(weightController.text);
+
+      double bmi;
+
+      if (selectedUnit == 'Metric (kg/m²)') {
+        bmi = weight / (height * height); // BMI calculation in metric units
+      } else {
+        bmi = (weight / (height * height)) * 703; // BMI calculation in imperial units
+      }
+
+      setState(() {
+        bmiResult = bmi.toStringAsFixed(2); // Format BMI result to 2 decimal places
+        bmiInterpretation = _getBMIInterpretation(bmi); // Get the interpretation
+      });
+    } else {
+      setState(() {
+        bmiResult = "Please enter valid height and weight.";
+        bmiInterpretation = "";
+      });
+    }
+  }
+
+  String _getBMIInterpretation(double bmi) {
+    if (bmi < 18.5) {
+      return "Underweight";
+    } else if (bmi >= 18.5 && bmi < 24.9) {
+      return "Normal weight";
+    } else if (bmi >= 25.0 && bmi < 29.9) {
+      return "Overweight";
+    } else if (bmi >= 30.0 && bmi < 34.9) {
+      return "Obese";
+    } else {
+      return "Morbidly Obese";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +97,16 @@ class BMICalculationPage extends StatelessWidget {
               ),
               child: DropdownButton<String>(
                 isExpanded: true,
-                value: selectedUnit.isNotEmpty ? selectedUnit : 'Metric (kg/m²)', // Set a default value
+                value: selectedUnit,
                 icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
                 elevation: 16,
                 style: const TextStyle(color: Colors.black, fontSize: 16),
-                onChanged: onUnitChanged,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedUnit = newValue!;
+                    _calculateBMI(); // Recalculate BMI when the unit changes
+                  });
+                },
                 items: <String>['Metric (kg/m²)', 'Imperial (lbs/in²)']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
@@ -77,6 +119,7 @@ class BMICalculationPage extends StatelessWidget {
             const SizedBox(height: 24),
             TextField(
               controller: heightController,
+              keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'Enter Height',
                 border: OutlineInputBorder(
@@ -87,10 +130,12 @@ class BMICalculationPage extends StatelessWidget {
                   ),
                 ),
               ),
+              onChanged: (value) => _calculateBMI(),
             ),
             const SizedBox(height: 24),
             TextField(
               controller: weightController,
+              keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'Enter Weight',
                 border: OutlineInputBorder(
@@ -101,6 +146,7 @@ class BMICalculationPage extends StatelessWidget {
                   ),
                 ),
               ),
+              onChanged: (value) => _calculateBMI(),
             ),
             const SizedBox(height: 24),
             Container(
@@ -117,8 +163,9 @@ class BMICalculationPage extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Text(
-                  bmiResult.isEmpty ? "BMI result will appear here." :
-                  "BMI Result: $bmiResult",
+                  bmiResult.isEmpty
+                      ? "BMI result will appear here."
+                      : "BMI Result: $bmiResult",
                   style: const TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.bold,
@@ -127,6 +174,17 @@ class BMICalculationPage extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 24),
+            if (bmiInterpretation.isNotEmpty)
+              Text(
+                "Interpretation: $bmiInterpretation",
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                ),
+                textAlign: TextAlign.center,
+              ),
           ],
         ),
       ),

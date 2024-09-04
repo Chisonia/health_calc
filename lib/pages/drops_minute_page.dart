@@ -17,19 +17,25 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
     if (selectedDropFactor.isNotEmpty &&
         volumeController.text.isNotEmpty &&
         durationController.text.isNotEmpty) {
-      final double dropFactor = double.parse(selectedDropFactor);
-      final double volume = double.parse(volumeController.text);
-      final double durationInHours = double.parse(durationController.text);
+      try {
+        final double dropFactor = double.parse(selectedDropFactor);
+        final double volume = double.parse(volumeController.text);
+        final double durationInHours = double.parse(durationController.text);
 
-      // Convert hours to minutes
-      final double durationInMinutes = durationInHours * 60.0;
+        // Convert hours to minutes
+        final double durationInMinutes = durationInHours * 60.0;
 
-      // Calculate drops per minute
-      final double dropsPerMinute = (volume * dropFactor) / durationInMinutes;
+        // Calculate drops per minute
+        final double dropsPerMinute = (volume * dropFactor) / durationInMinutes;
 
-      setState(() {
-        dropsPerMinuteResult = dropsPerMinute.toStringAsFixed(0);
-      });
+        setState(() {
+          dropsPerMinuteResult = dropsPerMinute.toStringAsFixed(0);
+        });
+      } catch (e) {
+        setState(() {
+          dropsPerMinuteResult = "Error in calculation. Check inputs.";
+        });
+      }
     } else {
       setState(() {
         dropsPerMinuteResult = "Please fill all fields.";
@@ -84,14 +90,15 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
                 value: selectedDropFactor.isNotEmpty ? selectedDropFactor : null,
                 hint: const Text("Select drip drop"),
                 icon: const Icon(
-                    Icons.arrow_drop_down_circle_outlined,
-                    color: Colors.deepPurple
+                  Icons.arrow_drop_down_circle_outlined,
+                  color: Colors.deepPurple,
                 ),
                 elevation: 16,
                 style: const TextStyle(color: Colors.black, fontSize: 16),
                 onChanged: (String? newValue) {
                   setState(() {
                     selectedDropFactor = newValue!;
+                    dropsPerMinuteResult = ''; // Clear result when changing drop factor
                     _calculateDropsPerMinute();
                   });
                 },
@@ -118,7 +125,9 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
                   ),
                 ),
               ),
-              onChanged: (value) => _calculateDropsPerMinute(),
+              onChanged: (value) {
+                _calculateDropsPerMinute();
+              },
             ),
             const SizedBox(height: 24),
             TextField(
@@ -134,7 +143,9 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
                   ),
                 ),
               ),
-              onChanged: (value) => _calculateDropsPerMinute(),
+              onChanged: (value) {
+                _calculateDropsPerMinute();
+              },
             ),
             const SizedBox(height: 24),
             Container(

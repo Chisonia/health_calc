@@ -83,7 +83,13 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
                   ),
                 ),
               ),
-              onChanged: (value) => _calculateDosage(),
+              onChanged: (value) {
+                setState(() {
+                  totalDosageResult = '';
+                  dosageInMlResult = '';
+                });
+                _calculateDosage();
+              },
             ),
             const SizedBox(height: 16),
             TextField(
@@ -99,7 +105,13 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
                   ),
                 ),
               ),
-              onChanged: (value) => _calculateDosage(),
+              onChanged: (value) {
+                setState(() {
+                  totalDosageResult = '';
+                  dosageInMlResult = '';
+                });
+                _calculateDosage();
+              },
             ),
             const SizedBox(height: 16),
             TextField(
@@ -115,7 +127,13 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
                   ),
                 ),
               ),
-              onChanged: (value) => _calculateDosage(),
+              onChanged: (value) {
+                setState(() {
+                  totalDosageResult = '';
+                  dosageInMlResult = '';
+                });
+                _calculateDosage();
+              },
             ),
             const SizedBox(height: 16),
             Container(

@@ -25,22 +25,15 @@ class HealthCalcApp extends StatelessWidget {
       routes: {
         '/wfa': (context) => WeightForAgePage(
           selectedAgeFormat: '',
-          onAgeFormatChanged: (String? value) {},
-          age: '',
-          onAgeChanged: (String value) {},
+          onAgeFormatChanged: (String? value) {  },
+          age: '', onAgeChanged: (String value) {  },
         ),
         '/ga-edd': (context) => const GestationalAgePage(),
         '/next-visit': (context) => NextVisitPage(
           selectedInterval: '',
-          onIntervalChanged: (String? value) {},
+          onIntervalChanged: (String? value) {  },
         ),
-        '/bmi': (context) => BMICalculationPage(
-          selectedUnit: '',
-          onUnitChanged: (String? value) {},
-          heightController: TextEditingController(),
-          weightController: TextEditingController(),
-          bmiResult: '',
-        ),
+        '/bmi': (context) => const BMICalculationPage(),
         '/dose-weight': (context) => const DosePerWeightPage(),
         '/drops-minute': (context) => const DropsPerMinutePage(),
       },

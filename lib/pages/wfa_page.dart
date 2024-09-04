@@ -46,10 +46,10 @@ class WeightForAgePageState extends State<WeightForAgePage> {
           });
         } else if(selectedAgeFormat == 'Years' && ageValue > 4 && ageValue <= 14 ){
           // For children 5 year to 14 years
-        final expectedWeight = 4 * ageValue;
-        setState(() {
-          expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
-        });
+          final expectedWeight = 4 * ageValue;
+          setState(() {
+            expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
+          });
 
         }else {
           setState(() {
