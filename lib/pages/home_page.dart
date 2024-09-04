@@ -123,11 +123,7 @@ class HomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DosePerWeightPage(
-                            weightController: TextEditingController(),
-                            dosageController: TextEditingController(),
-                            dosePerWeightResult: '',
-                          ),
+                          builder: (context) => const DosePerWeightPage(),
                         ),
                       );
                     },
@@ -139,12 +135,7 @@ class HomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DropsPerMinutePage(
-                            selectedDropFactor: '',
-                            onDropFactorChanged: (String? value) {},
-                            volumeController: TextEditingController(),
-                            dropsPerMinuteResult: '',
-                          ),
+                          builder: (context) => const DropsPerMinutePage(),
                         ),
                       );
                     },

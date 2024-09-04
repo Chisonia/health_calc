@@ -41,17 +41,8 @@ class HealthCalcApp extends StatelessWidget {
           weightController: TextEditingController(),
           bmiResult: '',
         ),
-        '/dose-weight': (context) => DosePerWeightPage(
-          weightController: TextEditingController(),
-          dosageController: TextEditingController(),
-          dosePerWeightResult: '',
-        ),
-        '/drops-minute': (context) => DropsPerMinutePage(
-          selectedDropFactor: '',
-          onDropFactorChanged: (String? value) {},
-          volumeController: TextEditingController(),
-          dropsPerMinuteResult: '',
-        ),
+        '/dose-weight': (context) => const DosePerWeightPage(),
+        '/drops-minute': (context) => const DropsPerMinutePage(),
       },
     );
   }

@@ -1,18 +1,41 @@
 import 'package:flutter/material.dart';
 
-class DropsPerMinutePage extends StatelessWidget {
-  final String selectedDropFactor;
-  final ValueChanged<String?> onDropFactorChanged;
-  final TextEditingController volumeController;
-  final String dropsPerMinuteResult;
+class DropsPerMinutePage extends StatefulWidget {
+  const DropsPerMinutePage({super.key});
 
-  const DropsPerMinutePage({
-    super.key,
-    required this.selectedDropFactor,
-    required this.onDropFactorChanged,
-    required this.volumeController,
-    required this.dropsPerMinuteResult,
-  });
+  @override
+  DropsPerMinutePageState createState() => DropsPerMinutePageState();
+}
+
+class DropsPerMinutePageState extends State<DropsPerMinutePage> {
+  String selectedDropFactor = '';
+  TextEditingController volumeController = TextEditingController();
+  TextEditingController durationController = TextEditingController();
+  String dropsPerMinuteResult = '';
+
+  void _calculateDropsPerMinute() {
+    if (selectedDropFactor.isNotEmpty &&
+        volumeController.text.isNotEmpty &&
+        durationController.text.isNotEmpty) {
+      final double dropFactor = double.parse(selectedDropFactor);
+      final double volume = double.parse(volumeController.text);
+      final double durationInHours = double.parse(durationController.text);
+
+      // Convert hours to minutes
+      final double durationInMinutes = durationInHours * 60.0;
+
+      // Calculate drops per minute
+      final double dropsPerMinute = (volume * dropFactor) / durationInMinutes;
+
+      setState(() {
+        dropsPerMinuteResult = dropsPerMinute.toStringAsFixed(0);
+      });
+    } else {
+      setState(() {
+        dropsPerMinuteResult = "Please fill all fields.";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +60,7 @@ class DropsPerMinutePage extends StatelessWidget {
           children: [
             const SizedBox(height: 24),
             const Text(
-              "Choose drip type and enter volume to calculate drops per minute:",
+              "Choose drip type, enter volume, and duration to calculate drops per minute:",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black87,
@@ -58,15 +81,20 @@ class DropsPerMinutePage extends StatelessWidget {
               ),
               child: DropdownButton<String>(
                 isExpanded: true,
-                value: selectedDropFactor.isNotEmpty ? selectedDropFactor : null, // No default value
-                hint: const Text("Select drip drop"), // Custom hint
+                value: selectedDropFactor.isNotEmpty ? selectedDropFactor : null,
+                hint: const Text("Select drip drop"),
                 icon: const Icon(
                     Icons.arrow_drop_down_circle_outlined,
                     color: Colors.deepPurple
                 ),
                 elevation: 16,
                 style: const TextStyle(color: Colors.black, fontSize: 16),
-                onChanged: onDropFactorChanged,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedDropFactor = newValue!;
+                    _calculateDropsPerMinute();
+                  });
+                },
                 items: <String>['15', '20', '60']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
@@ -90,13 +118,30 @@ class DropsPerMinutePage extends StatelessWidget {
                   ),
                 ),
               ),
+              onChanged: (value) => _calculateDropsPerMinute(),
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: durationController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Enter Duration (hours)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24.0),
+                  borderSide: const BorderSide(
+                    color: Colors.deepPurple,
+                    width: 2.0,
+                  ),
+                ),
+              ),
+              onChanged: (value) => _calculateDropsPerMinute(),
             ),
             const SizedBox(height: 24),
             Container(
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.deepOrangeAccent.shade100,
+                color: Colors.lightBlueAccent.shade100,
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,

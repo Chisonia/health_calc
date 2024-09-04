@@ -168,7 +168,7 @@ class GestationalAgePageState extends State<GestationalAgePage> {
                 child: Text(
                   gestationalAge.isNotEmpty
                       ? "Gestational Age is $gestationalAge"
-                      : "Gestational Age will appear here",
+                      : "Gestational Age will appear here.",
                   style: const TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.bold,
@@ -182,7 +182,7 @@ class GestationalAgePageState extends State<GestationalAgePage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.deepOrangeAccent.shade100,
+                color: Colors.lightBlueAccent.shade100,
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
