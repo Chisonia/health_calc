@@ -3,18 +3,25 @@ import 'package:flutter/material.dart';
 class HistoryPage extends StatefulWidget {
   final List<Map<String, dynamic>> calculationHistory;
 
-  const HistoryPage({Key? key, required this.calculationHistory}) : super(key: key);
+  const HistoryPage({super.key, required this.calculationHistory});
 
   @override
-  _HistoryPageState createState() => _HistoryPageState();
+  HistoryPageState createState() => HistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage> {
+class HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calculation History'),
+        title: const Text(
+          'Calculation History',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 16.0,
+            fontWeight: FontWeight.bold
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
       ),

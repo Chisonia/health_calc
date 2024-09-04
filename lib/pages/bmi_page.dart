@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../theme_provider.dart';
 
 class BMICalculationPage extends StatefulWidget {
   const BMICalculationPage({super.key});
@@ -55,13 +58,13 @@ class BMICalculationPageState extends State<BMICalculationPage> {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.purple.shade100,
         title: const Text(
           'CALCULATE BMI',
           style: TextStyle(
-            color: Colors.black87,
             fontWeight: FontWeight.bold,
             fontSize: 16.0,
           ),
@@ -79,7 +82,6 @@ class BMICalculationPageState extends State<BMICalculationPage> {
               "Select the unit and enter the height and weight for BMI calculation:",
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.black87,
               ),
               textAlign: TextAlign.start,
             ),
@@ -167,7 +169,6 @@ class BMICalculationPageState extends State<BMICalculationPage> {
                       ? "BMI result will appear here."
                       : "BMI Result: $bmiResult",
                   style: const TextStyle(
-                    color: Colors.black87,
                     fontWeight: FontWeight.bold,
                     fontSize: 18.0,
                   ),

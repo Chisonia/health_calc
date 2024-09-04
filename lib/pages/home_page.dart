@@ -7,6 +7,7 @@ import 'drops_minute_page.dart';
 import 'ga_edd_page.dart';
 import 'nxt_visit_page.dart';
 import 'history_page.dart'; // Import the HistoryPage
+import 'profile_page.dart'; // Import the ProfilePage
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -45,6 +46,8 @@ class HomePageState extends State<HomePage> {
           return _buildHomeBody();
         case 1:
           return HistoryPage(calculationHistory: calculationHistory); // Pass history to HistoryPage
+        case 2:
+          return const ProfilePage(); // Open Profile Page
         default:
           return Container(); // Fallback for other cases
       }
