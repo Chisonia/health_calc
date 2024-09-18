@@ -19,7 +19,7 @@ class ProfilePage extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.lightBlueAccent[50],
         elevation: 0, // Removes shadow for a flat appearance
       ),
       body: Padding(
@@ -28,10 +28,16 @@ class ProfilePage extends StatelessWidget {
           children: [
             // Expandable settings section
             ExpansionTile(
-              title: const Text('Settings'),
+              title: Text(
+                  'Settings',
+                  style: Theme.of(context).textTheme.headlineMedium,
+              ),
               children: [
                 ListTile(
-                  title: const Text('Dark Mode'),
+                  title: Text(
+                      'Dark Mode',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   trailing: Switch(
                     value: themeProvider.isDarkTheme,
                     onChanged: (value) {
@@ -40,14 +46,19 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
                 ListTile(
-                  title: const Text('Notification Settings'),
+                  title: Text(
+                      'Notification Settings',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     // Navigate to notification settings page
                   },
                 ),
                 ListTile(
-                  title: const Text('Privacy Settings'),
+                  title: Text('Privacy Settings',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     // Navigate to privacy settings page
@@ -58,41 +69,24 @@ class ProfilePage extends StatelessWidget {
             ),
             // User information section
             const SizedBox(height: 20),
-            const Text(
-              'User Information',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            // Placeholder for user information
-            Container(
+            Padding(
               padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Name: John Doe',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Email: johndoe@example.com',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Phone: +1234567890',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Date Joined: January 1, 2023',
-                    style: TextStyle(fontSize: 16),
+                    'User Information',
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Placeholder for user information
+            Center(
+              child:Text(
+                'No User Information Yet',
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
           ],

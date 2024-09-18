@@ -55,7 +55,6 @@ class HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         title: Row(
           children: [
@@ -65,6 +64,8 @@ class HomePageState extends State<HomePage> {
       ),
       body: getBody(),
       bottomNavigationBar: BottomNavigationBar(
+        unselectedLabelStyle: Theme.of(context).textTheme.titleSmall,
+        selectedLabelStyle: Theme.of(context).textTheme.labelSmall,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -93,23 +94,15 @@ class HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'WELCOME',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Click On The Icons Below To Quickly Perform Your'
                 ' Desired Calculation.',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Colors.black87,
-            ),
+              style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 32),
           SizedBox(
@@ -221,26 +214,33 @@ class HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(height: 20), // Add some spacing before the text
-          const Text(
+          Text(
             'RECENT CALCULATIONS',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+            style: Theme.of(context).textTheme.headlineMedium,
           ),
           // Display recent calculations
           Expanded(
             child: calculationHistory.isEmpty
-                ? const Center(child: Text('No Recent Calculations'))
+                ? Center(
+                child: Text(
+                    'No Recent Calculations',
+                    style: Theme.of(context).textTheme.displayMedium
+                )
+            )
                 : ListView.builder(
               itemCount: calculationHistory.length,
               itemBuilder: (context, index) {
                 final entry = calculationHistory[index];
                 return ListTile(
                   leading: Image.asset(entry['iconPath'], width: 24, height: 24), // Use Image.asset for custom icons
-                  title: Text(entry['type']),
-                  subtitle: Text(entry['result']),
+                  title: Text(
+                      entry['type'],
+                      style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  subtitle: Text(
+                      entry['result'],
+                      style: Theme.of(context).textTheme.titleSmall
+                  ),
                 );
               },
             ),

@@ -43,14 +43,9 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.purple.shade100,
-        title: const Text(
-          'CALCULATE DOSE PER WEIGHT',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 16.0,
-          ),
+        title: Text(
+          'CALCULATE TOTAL DOSE FOR WEIGHT',
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: true,
         elevation: 0,
@@ -62,7 +57,7 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
           children: [
             const SizedBox(height: 10),
             const Text(
-              "Enter the weight and dosage",
+              "Enter patient's weight, the recommended dose per weight and the drug's concentration per ml",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black87,
@@ -70,77 +65,105 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
               textAlign: TextAlign.start,
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: weightController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Enter Weight (kg)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: const BorderSide(
-                    color: Colors.deepPurple,
-                    width: 2.0,
-                  ),
+            Container(
+              height: 60.0,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100], // Changes based on theme
+                borderRadius: BorderRadius.circular(24.0),
+                border: Border.all(
+                  color: Colors.deepPurple,
+                  width: 2.0,
                 ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  totalDosageResult = '';
-                  dosageInMlResult = '';
-                });
-                _calculateDosage();
-              },
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: dosageController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Enter Dosage (mg)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: const BorderSide(
-                    color: Colors.deepPurple,
-                    width: 2.0,
+              child: Center(
+                child: TextField(
+                  controller: weightController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Enter Weight (kg)',
+                    labelStyle: Theme.of(context).textTheme.labelMedium,
+                    border: InputBorder.none
                   ),
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  onChanged: (value) {
+                    setState(() {
+                      totalDosageResult = '';
+                      dosageInMlResult = '';
+                    });
+                    _calculateDosage();
+                  },
                 ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  totalDosageResult = '';
-                  dosageInMlResult = '';
-                });
-                _calculateDosage();
-              },
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: concentrationController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Concentration (mg/ml)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: const BorderSide(
-                    color: Colors.deepPurple,
-                    width: 2.0,
-                  ),
-                ),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  totalDosageResult = '';
-                  dosageInMlResult = '';
-                });
-                _calculateDosage();
-              },
             ),
             const SizedBox(height: 16),
             Container(
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.deepOrangeAccent.shade100,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100], // Changes based on theme
+                borderRadius: BorderRadius.circular(24.0),
+                border: Border.all(
+                  color: Colors.deepPurple,
+                  width: 2.0,
+                ),
+              ),
+              child: Center(
+                child: TextField(
+                  controller: dosageController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Enter Dosage (mg)',
+                    labelStyle: Theme.of(context).textTheme.labelMedium,
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      totalDosageResult = '';
+                      dosageInMlResult = '';
+                    });
+                    _calculateDosage();
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              height: 60.0,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100], // Changes based on theme
+                borderRadius: BorderRadius.circular(24.0),
+                border: Border.all(
+                  color: Colors.deepPurple,
+                  width: 2.0,
+                ),
+              ),
+              child: Center(
+                child: TextField(
+                  controller: concentrationController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Concentration (mg/ml)',
+                    labelStyle: Theme.of(context).textTheme.labelMedium,
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      totalDosageResult = '';
+                      dosageInMlResult = '';
+                    });
+                    _calculateDosage();
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              height: 60.0,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.deepOrangeAccent.shade100,
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -152,11 +175,7 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
                   totalDosageResult.isEmpty
                       ? "Total Dosage will appear here."
                       : "Total Dosage: $totalDosageResult mg",
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),
@@ -165,7 +184,7 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.lightBlueAccent.shade100,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.lightBlueAccent.shade100,
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -177,11 +196,7 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
                   dosageInMlResult.isEmpty
                       ? "Dosage in ml will appear here."
                       : "Dosage: $dosageInMlResult ml",
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),

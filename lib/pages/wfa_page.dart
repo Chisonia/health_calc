@@ -20,12 +20,20 @@ class WeightForAgePage extends StatefulWidget {
 
 class WeightForAgePageState extends State<WeightForAgePage> {
   late String selectedAgeFormat;
+  late TextEditingController ageController; // TextEditingController for the age input
   String expectedWeightAge = 'Expected Weight Range will appear here.'; // default text
 
   @override
   void initState() {
     super.initState();
     selectedAgeFormat = widget.selectedAgeFormat.isEmpty ? '' : widget.selectedAgeFormat;
+    ageController = TextEditingController(); // Initialize the TextEditingController
+  }
+
+  @override
+  void dispose() {
+    ageController.dispose(); // Dispose the controller
+    super.dispose();
   }
 
   void _calculateExpectedWeight(String age) {
@@ -38,20 +46,19 @@ class WeightForAgePageState extends State<WeightForAgePage> {
           setState(() {
             expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
           });
-        } else if (selectedAgeFormat == 'Years' && ageValue > 0 && ageValue <= 4 ) {
+        } else if (selectedAgeFormat == 'Years' && ageValue > 0 && ageValue <= 4) {
           // For children 1 year to 4 years
           final expectedWeight = 2 * (ageValue + 5);
           setState(() {
             expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
           });
-        } else if(selectedAgeFormat == 'Years' && ageValue > 4 && ageValue <= 14 ){
+        } else if (selectedAgeFormat == 'Years' && ageValue > 4 && ageValue <= 14) {
           // For children 5 year to 14 years
           final expectedWeight = 4 * ageValue;
           setState(() {
             expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
           });
-
-        }else {
+        } else {
           setState(() {
             expectedWeightAge = "Please enter a valid age for the selected format.";
           });
@@ -72,14 +79,9 @@ class WeightForAgePageState extends State<WeightForAgePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.purple.shade100,
-        title: const Text(
+        title: Text(
           'CALCULATE WEIGHT FOR AGE',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-            fontSize: 16.0,
-          ),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: true,
         elevation: 0,
@@ -90,30 +92,20 @@ class WeightForAgePageState extends State<WeightForAgePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24),
-            const Text.rich(
+            Text.rich(
               TextSpan(
                 children: [
                   TextSpan(
                     text: "Select the age format: \n",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   TextSpan(
-                    text: "'Months' for children under 1 year, \n",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
+                    text: '"Months" for children under 1 year, \n',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                   TextSpan(
-                    text: "'Years' for 1 year to 14 years.",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
+                    text: '"Years" for 1 year to 14 years.',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ),
@@ -124,7 +116,7 @@ class WeightForAgePageState extends State<WeightForAgePage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -139,17 +131,17 @@ class WeightForAgePageState extends State<WeightForAgePage> {
                   color: Colors.deepPurple,
                 ),
                 elevation: 16,
-                style: const TextStyle(color: Colors.black, fontSize: 16),
-                hint: const Text(
+                style: Theme.of(context).textTheme.headlineMedium,
+                hint: Text(
                   "Select Age Format",
-                  style: TextStyle(color: Colors.black54),
+                  style: Theme.of(context).textTheme.labelMedium,
                 ),
                 onChanged: (String? value) {
                   if (value != null) {
                     setState(() {
                       selectedAgeFormat = value;
                       // Recalculate expected weight with the current age
-                      _calculateExpectedWeight(widget.age);
+                      _calculateExpectedWeight(ageController.text); // Use controller text
                     });
                     widget.onAgeFormatChanged(value);
                   }
@@ -158,7 +150,10 @@ class WeightForAgePageState extends State<WeightForAgePage> {
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value),
+                    child: Text(
+                      value,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   );
                 }).toList(),
               ),
@@ -168,7 +163,7 @@ class WeightForAgePageState extends State<WeightForAgePage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100], // Changes based on theme
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -177,17 +172,19 @@ class WeightForAgePageState extends State<WeightForAgePage> {
               ),
               child: Center(
                 child: TextField(
+                  controller: ageController, // Set the controller
                   onChanged: (value) {
                     widget.onAgeChanged(value);
                     _calculateExpectedWeight(value); // Calculate weight when age is changed
                   },
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.done,
-                  decoration: const InputDecoration(
-                    hintText: "Enter Child's Age",
-                    hintStyle: TextStyle(color: Colors.black54),
+                  decoration: InputDecoration(
+                    labelText: "Enter Child's Age",
+                    labelStyle: Theme.of(context).textTheme.labelMedium,
                     border: InputBorder.none,
                   ),
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),
@@ -196,21 +193,18 @@ class WeightForAgePageState extends State<WeightForAgePage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.deepOrangeAccent.shade100,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[200],
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
                   width: 2.0,
                 ),
               ),
-              child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Text(
                   expectedWeightAge,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),

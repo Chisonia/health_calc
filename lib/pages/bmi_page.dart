@@ -11,11 +11,20 @@ class BMICalculationPage extends StatefulWidget {
 }
 
 class BMICalculationPageState extends State<BMICalculationPage> {
-  String selectedUnit = 'Metric (kg/m²)'; // Default unit
+  String selectedUnit = ''; // Default unit
   final TextEditingController heightController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   String bmiResult = '';
   String bmiInterpretation = '';
+
+  void _selectedUnit(String? newValue) {
+    if (newValue != null) {
+      setState(() {
+        selectedUnit = newValue;
+        _calculateBMI(); // Recalculate BMI when the unit changes
+      });
+    }
+  }
 
   void _calculateBMI() {
     if (heightController.text.isNotEmpty && weightController.text.isNotEmpty) {
@@ -62,12 +71,9 @@ class BMICalculationPageState extends State<BMICalculationPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'CALCULATE BMI',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16.0,
-          ),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: true,
         elevation: 0,
@@ -78,11 +84,9 @@ class BMICalculationPageState extends State<BMICalculationPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24),
-            const Text(
+            Text(
               "Select the unit and enter the height and weight for BMI calculation:",
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.start,
             ),
             const SizedBox(height: 24),
@@ -90,7 +94,9 @@ class BMICalculationPageState extends State<BMICalculationPage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.black54
+                    : Colors.grey[50],
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -99,63 +105,93 @@ class BMICalculationPageState extends State<BMICalculationPage> {
               ),
               child: DropdownButton<String>(
                 isExpanded: true,
-                value: selectedUnit,
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
+                value: selectedUnit.isEmpty ? null : selectedUnit,
+                icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: Colors.deepPurple),
                 elevation: 16,
-                style: const TextStyle(color: Colors.black, fontSize: 16),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedUnit = newValue!;
-                    _calculateBMI(); // Recalculate BMI when the unit changes
-                  });
-                },
+                style: Theme.of(context).textTheme.headlineMedium,
+                onChanged: _selectedUnit,
+                hint: Text(
+                  "Select Format",
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
                 items: <String>['Metric (kg/m²)', 'Imperial (lbs/in²)']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value),
+                    child: Text(
+                      value,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   );
                 }).toList(),
               ),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: heightController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Enter Height',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: const BorderSide(
-                    color: Colors.deepPurple,
-                    width: 2.0,
-                  ),
-                ),
-              ),
-              onChanged: (value) => _calculateBMI(),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: weightController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Enter Weight',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: const BorderSide(
-                    color: Colors.deepPurple,
-                    width: 2.0,
-                  ),
-                ),
-              ),
-              onChanged: (value) => _calculateBMI(),
             ),
             const SizedBox(height: 24),
             Container(
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.deepOrangeAccent.shade100,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.black54
+                    : Colors.grey[100],
+                borderRadius: BorderRadius.circular(24.0),
+                border: Border.all(
+                  color: Colors.deepPurple,
+                  width: 2.0,
+                ),
+              ),
+              child: Center(
+                child: TextField(
+                  controller: heightController,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  decoration: InputDecoration(
+                    labelText: 'Enter Height',
+                    labelStyle: Theme.of(context).textTheme.labelMedium,
+                    border: InputBorder.none,
+                  ),
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  onChanged: (value) => _calculateBMI(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              height: 60.0,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.black54
+                    : Colors.grey[100],
+                borderRadius: BorderRadius.circular(24.0),
+                border: Border.all(
+                  color: Colors.deepPurple,
+                  width: 2.0,
+                ),
+              ),
+              child: Center(
+                child: TextField(
+                  controller: weightController,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  decoration: InputDecoration(
+                    labelText: 'Enter Weight',
+                    labelStyle: Theme.of(context).textTheme.labelMedium,
+                    border: InputBorder.none,
+                  ),
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  onChanged: (value) => _calculateBMI(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              height: 60.0,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.black54
+                    : Colors.deepOrangeAccent.shade100,
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -168,10 +204,7 @@ class BMICalculationPageState extends State<BMICalculationPage> {
                   bmiResult.isEmpty
                       ? "BMI result will appear here."
                       : "BMI Result: $bmiResult",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),
@@ -179,11 +212,7 @@ class BMICalculationPageState extends State<BMICalculationPage> {
             if (bmiInterpretation.isNotEmpty)
               Text(
                 "Interpretation: $bmiInterpretation",
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.0,
-                ),
+                style: Theme.of(context).textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
           ],

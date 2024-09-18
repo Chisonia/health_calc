@@ -13,6 +13,8 @@ class GestationalAgePageState extends State<GestationalAgePage> {
   String gestationalAge = '';
   String expectedDeliveryDate = '';
 
+  final TextEditingController dateController = TextEditingController();
+
   void _selectOption(String? option) {
     if (option != null) {
       setState(() {
@@ -32,6 +34,7 @@ class GestationalAgePageState extends State<GestationalAgePage> {
     if (picked != null) {
       setState(() {
         selectedDate = picked.toLocal().toString().split(' ')[0];
+        dateController.text = selectedDate; // Update controller text
         _calculateGestationalAgeAndEDD(); // Recalculate when date changes
       });
     }
@@ -63,17 +66,18 @@ class GestationalAgePageState extends State<GestationalAgePage> {
   }
 
   @override
+  void dispose() {
+    dateController.dispose(); // Dispose of the controller when done
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.purple.shade100,
-        title: const Text(
+        title: Text(
           'CALCULATE GESTATIONAL AGE AND EDD',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-            fontSize: 16.0,
-          ),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: true,
         elevation: 0,
@@ -84,12 +88,9 @@ class GestationalAgePageState extends State<GestationalAgePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24),
-            const Text(
+            Text(
               "Select how to calculate GA and EDD.",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.start,
             ),
             const SizedBox(height: 24),
@@ -97,7 +98,7 @@ class GestationalAgePageState extends State<GestationalAgePage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -109,17 +110,20 @@ class GestationalAgePageState extends State<GestationalAgePage> {
                 value: selectedOption.isEmpty ? null : selectedOption,
                 icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: Colors.deepPurple),
                 elevation: 16,
-                style: const TextStyle(color: Colors.black, fontSize: 16),
+                style: Theme.of(context).textTheme.headlineMedium,
                 onChanged: _selectOption,
-                hint: const Text(
+                hint: Text(
                   "Select Format",
-                  style: TextStyle(color: Colors.black54),
+                  style: Theme.of(context).textTheme.labelMedium,
                 ),
                 items: <String>['Weeks', 'Months']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value),
+                    child: Text(
+                      value,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   );
                 }).toList(),
               ),
@@ -127,26 +131,31 @@ class GestationalAgePageState extends State<GestationalAgePage> {
             const SizedBox(height: 24),
             GestureDetector(
               onTap: () => _selectDate(context),
-              child: Container(
-                height: 60.0,
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24.0),
-                  border: Border.all(
-                    color: Colors.deepPurple,
-                    width: 2.0,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Text(
-                    selectedDate.isEmpty ? "Select Date" : selectedDate,
-                    style: const TextStyle(
-                      color: Colors.black54,
-                      fontSize: 16.0,
+              child: AbsorbPointer(
+                child: Container(
+                  height: 60.0,
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.black54
+                        : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(24.0),
+                    border: Border.all(
+                      color: Colors.deepPurple,
+                      width: 2.0,
                     ),
-                    textAlign: TextAlign.start,
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: dateController,
+                      decoration: InputDecoration(
+                        labelText: "Select Date",
+                        labelStyle: Theme.of(context).textTheme.labelMedium,
+                        border: InputBorder.none,
+                        filled: true,
+                        fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -156,7 +165,7 @@ class GestationalAgePageState extends State<GestationalAgePage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.deepOrangeAccent.shade100,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.deepOrangeAccent.shade100,
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -169,11 +178,7 @@ class GestationalAgePageState extends State<GestationalAgePage> {
                   gestationalAge.isNotEmpty
                       ? "Gestational Age is $gestationalAge"
                       : "Gestational Age will appear here.",
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),
@@ -182,7 +187,7 @@ class GestationalAgePageState extends State<GestationalAgePage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.lightBlueAccent.shade100,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.lightBlueAccent.shade100,
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -195,11 +200,7 @@ class GestationalAgePageState extends State<GestationalAgePage> {
                   expectedDeliveryDate.isNotEmpty
                       ? "Expected Delivery Date is $expectedDeliveryDate"
                       : "Expected Delivery Date will appear here.",
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),

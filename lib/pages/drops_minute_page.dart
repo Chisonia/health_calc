@@ -47,14 +47,9 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.purple.shade100,
-        title: const Text(
+        title: Text(
           'CALCULATE DROPS PER MINUTE',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-            fontSize: 16.0,
-          ),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: true,
         elevation: 0,
@@ -65,12 +60,9 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24),
-            const Text(
+            Text(
               "Choose drip type, enter volume, and duration to calculate drops per minute:",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.start,
             ),
             const SizedBox(height: 24),
@@ -78,7 +70,7 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -89,12 +81,9 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
                 isExpanded: true,
                 value: selectedDropFactor.isNotEmpty ? selectedDropFactor : null,
                 hint: const Text("Select drip drop"),
-                icon: const Icon(
-                  Icons.arrow_drop_down_circle_outlined,
-                  color: Colors.deepPurple,
-                ),
+                icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: Colors.deepPurple),
                 elevation: 16,
-                style: const TextStyle(color: Colors.black, fontSize: 16),
+                style: Theme.of(context).textTheme.headlineMedium,
                 onChanged: (String? newValue) {
                   setState(() {
                     selectedDropFactor = newValue!;
@@ -106,46 +95,69 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value),
+                    child: Text(
+                        value,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   );
                 }).toList(),
               ),
             ),
             const SizedBox(height: 24),
-            TextField(
-              controller: volumeController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Enter Volume (ml)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: const BorderSide(
-                    color: Colors.deepPurple,
-                    width: 2.0,
-                  ),
+            Container(
+              height: 60.0,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100], // Changes based on theme
+                borderRadius: BorderRadius.circular(24.0),
+                border: Border.all(
+                  color: Colors.deepPurple,
+                  width: 2.0,
                 ),
               ),
-              onChanged: (value) {
-                _calculateDropsPerMinute();
-              },
+              child: Center(
+                child: TextField(
+                  controller: volumeController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                      labelText: 'Enter Volume (ml)',
+                      labelStyle: Theme.of(context).textTheme.labelMedium,
+                      border: InputBorder.none
+                    ),
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  onChanged: (value) {
+                    _calculateDropsPerMinute();
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 24),
-            TextField(
-              controller: durationController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Enter Duration (hours)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: const BorderSide(
-                    color: Colors.deepPurple,
-                    width: 2.0,
-                  ),
+            Container(
+              height: 60.0,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100], // Changes based on theme
+                borderRadius: BorderRadius.circular(24.0),
+                border: Border.all(
+                  color: Colors.deepPurple,
+                  width: 2.0,
                 ),
               ),
-              onChanged: (value) {
-                _calculateDropsPerMinute();
-              },
+              child: Center(
+                child: TextField(
+                  controller: durationController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Enter Duration (hours)',
+                    labelStyle: Theme.of(context).textTheme.labelMedium,
+                    border: InputBorder.none,
+                  ),
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  onChanged: (value) {
+                    _calculateDropsPerMinute();
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 24),
             Container(
@@ -165,11 +177,7 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
                   dropsPerMinuteResult.isEmpty
                       ? "Drops per Minute will appear here."
                       : "Drops per Minute: $dropsPerMinuteResult",
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),

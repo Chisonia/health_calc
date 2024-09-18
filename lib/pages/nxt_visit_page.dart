@@ -71,14 +71,9 @@ class NextVisitPageState extends State<NextVisitPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.purple.shade100,
-        title: const Text(
+        title: Text(
           'CALCULATE NEXT VISIT DATE',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-            fontSize: 16.0,
-          ),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: true,
         elevation: 0,
@@ -89,12 +84,9 @@ class NextVisitPageState extends State<NextVisitPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 36),
-            const Text(
+            Text(
               "Select the desired interval for the next appointment",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.start,
             ),
             const SizedBox(height: 24),
@@ -102,7 +94,7 @@ class NextVisitPageState extends State<NextVisitPage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -112,13 +104,15 @@ class NextVisitPageState extends State<NextVisitPage> {
               child: DropdownButton<String>(
                 isExpanded: true,
                 value: selectedInterval.isEmpty ? null : selectedInterval,
-                hint: const Text("Select interval"),
+                hint: Text(
+                    "Select interval",
+                    style: Theme.of(context).textTheme.labelMedium,),
                 icon: const Icon(
                     Icons.arrow_drop_down_circle_outlined,
                     color: Colors.deepPurple
                 ),
                 elevation: 16,
-                style: const TextStyle(color: Colors.black, fontSize: 16),
+                style: Theme.of(context).textTheme.bodyMedium,
                 onChanged: (String? value) {
                   if (value != null) {
                     setState(() {
@@ -134,7 +128,10 @@ class NextVisitPageState extends State<NextVisitPage> {
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value),
+                    child: Text(
+                        value,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   );
                 }).toList(),
               ),
@@ -144,7 +141,7 @@ class NextVisitPageState extends State<NextVisitPage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.deepOrangeAccent.shade100,
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100],
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -155,11 +152,7 @@ class NextVisitPageState extends State<NextVisitPage> {
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Text(
                   appointmentDate,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
+                    style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),
