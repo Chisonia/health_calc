@@ -1,16 +1,50 @@
-# health_calc
+HealthCalc
+Introduction
+HealthCalc is a mobile application designed to simplify complex medical calculations often performed by healthcare workers. These include calculating gestational age, expected delivery dates, medication dosages, and more, with the goal of reducing errors and improving efficiency in healthcare environments.
+Project Blog Article | Author LinkedIn (www.linkedin.com/in/chinenye-akukalia)
 
-Health Calc.
+Installation
+To set up the project on your local machine, follow these steps:
 
-## Getting Started
+Clone the repository:
+git clone https://github.com/yourusername/healthcalc.git
 
-This project is a starting point for a Flutter application.
+Navigate to the project folder:
+cd healthcalc
 
-A few resources to get you started if this is your first Flutter project:
+Install dependencies:
+flutter pub get
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Run the app:
+flutter run
+
+Usage
+HealthCalc allows healthcare workers to perform the following calculations easily:
+
+Gestational Age & Expected Delivery Date
+Input the last menstrual period, and the app will calculate the gestational age and expected delivery date for pregnant women.
+
+Medication Dosage
+Input the medication strength and patient weight, and the app will compute the total dosage needed.
+
+Fluid Drops Per Minute
+Enter the total volume of fluid and the drip factor to calculate the drops per minute required for intravenous fluids.
+
+Weight for Age
+Input a child's weight and age to determine if their weight falls within the normal range for their age.
+
+Contributing
+Contributions are welcome!
+To contribute:
+
+Fork the repository.
+Create a new branch (git checkout -b feature-branch).
+Make your changes and commit them (git commit -m 'Add new feature').
+Push to the branch (git push origin feature-branch).
+Open a Pull Request.
+
+
+
+Licensing
+This project is licensed under the MIT License. See the LICENSE file for more details.
