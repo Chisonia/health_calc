@@ -1,29 +1,43 @@
 **HealthCalc** 🎯
+
+
+
 **Introduction**
+
 HealthCalc is an app designed to streamline essential healthcare calculations, from gestational age and medication dosages to next appointment dates and fluid drip rates. Inspired by my experience working in primary healthcare, I noticed the need for an app that could make medical consultations more efficient by minimizing manual calculations that can lead to errors.
 Project Blog Article | Author LinkedIn (www.linkedin.com/in/chinenye-akukalia)
 
 
 **Project Inspiration & Vision** 💡
+
 Working as a medical doctor for 10+ years, I encountered the recurring problem of calculating vital metrics such as:
 
 Gestational age & expected delivery dates for pregnant women
+
 Medication dosages based on patient weight
+
 Fluid administration rates
+
 Counting the days to the next patient visit
+
 These tasks are not only time-consuming but prone to errors, which can negatively impact patient care. I wanted to create a solution to speed up patient consultation and reduce calculation errors, making healthcare delivery more efficient.
 
 This app started as a simple idea during my time working at a busy primary health center. With time and iteration, I realized the potential of HealthCalc to enhance patient care by allowing healthcare workers to focus more on their patients rather than on manual calculations.
 
 
 **Technology & Architecture** 🛠️
+
 HealthCalc was developed using the following technologies:
 
 **Flutter**: Used to build the cross-platform mobile app.
+
 **Dart**: The core programming language.
+
 **State Management**: Initially considered using BLoC for state management but found that StatefulWidget was more suitable given the app's simplicity.
+
 **Shared Preferences**: Local storage used for saving recent calculations.
 **JSON**: For storing and retrieving data.
+
 
 **Here’s a visual overview of the architecture:**
 
@@ -32,26 +46,39 @@ HealthCalc was developed using the following technologies:
 
 
 **Core Algorithms** 🧠
+
 **Gestational Age Calculation**
 
 DateTime currentDate = DateTime.now();
+
 Duration difference = currentDate.difference(lastMenstrualPeriod);
+
 int weeks = (daysDifference ~/ 7);
+
 int days = daysDifference % 7;
 
 int months = daysDifference ~/ 30;
+
 int days = daysDifference % 30;
 
 
 
 **Next Appointment Date Calculation:**
+
 duration = const Duration(days: 7);
+
 duration = const Duration(days: 14);
+
 duration = const Duration(days: 30);
+
 duration = const Duration(days: 60);
+
 duration = const Duration(days: 90);
+
 duration = const Duration(days: 365);
+
 duration = const Duration(days: 1095);
+
 duration = const Duration(days: 1825);
 
 **Medication Dosage Calculation:**
@@ -59,16 +86,22 @@ duration = const Duration(days: 1825);
 final double totalDosage = dosage * weight; // Total dosage = dosage * weight
 
 // Calculate dosage in ml
+
 final double dosageInMl = totalDosage / concentration; // ml
 
 
 **Fluid Drops per Minute:**
+
 final double durationInMinutes = durationInHours * 60.0;
+
 final double dropsPerMinute = (volume * dropFactor) / durationInMinutes;
 
 **Weight For Age**
+
 final expectedWeight = (ageValue + 9) / 2;
+
 final expectedWeight = 2 * (ageValue + 5);
+
 final expectedWeight = 4 * ageValue;
 
 
@@ -88,43 +121,59 @@ final expectedWeight = 4 * ageValue;
 
 
 **Challenges & Solutions** 🚧
+
 One of the major challenges I faced during development was the initial plan to use BLoC for state management. BLoC turned out to be unnecessarily complex for this small-scale project. After testing several approaches, I switched to using StatefulWidget, which streamlined the workflow and improved performance.
 
 Another technical challenge was integrating local storage. I wanted users to have access to their recent calculations, so I implemented Shared Preferences for storing data. This allowed for a more seamless user experience.
 
 **Learnings & Future Plans** 🚀
+
 Throughout the development of HealthCalc, I deepened my understanding of mobile app architecture, specifically:
 
 Local storage techniques using Shared Preferences.
+
 Optimizing the user interface for healthcare workers, ensuring simplicity and clarity.
+
 How to make medical apps intuitive for non-technical users.
-For the next iteration, I plan to:
+
+
+**For the next iteration, I plan to:**
 
 Expand the calculation features to include more specific medication dosages and clinical tools.
+
 Integrate cloud storage to allow for cross-device data sharing.
+
 Enhance the UI/UX based on feedback from healthcare professionals.
 
 **Installation & Setup 🔧
+
 To get started with HealthCalc:**
+
 To set up the project on your local machine, follow these steps:
 
 **Clone the repository:**
+
 git clone https://github.com/yourusername/healthcalc.git
 
 **Navigate to the project folder:**
+
 cd healthcalc
 
 **Install dependencies:**
+
 flutter pub get
 
 
 **Run the app:**
+
 flutter run
 
 **Usage**
+
 HealthCalc allows healthcare workers to perform the following calculations easily:
 
 Gestational Age & Expected Delivery Date
+
 Input the last menstrual period, and the app will calculate the gestational age and expected delivery date for pregnant women.
 
 Medication Dosage
@@ -137,12 +186,19 @@ Weight for Age
 Input a child's weight and age to determine if their weight falls within the normal range for their age.
 
 **Contributing** 🤝
+
 Contributions are welcome!
+
 **To contribute:**
+
 Fork the repository.
+
 Create a new branch (git checkout -b feature-branch).
+
 Make your changes and commit them (git commit -m 'Add new feature').
+
 Push to the branch (git push origin feature-branch).
+
 Open a Pull Request.
 
 
