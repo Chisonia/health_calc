@@ -74,6 +74,15 @@ final expectedWeight = 4 * ageValue;
 
 **Screenshots** 📸
 ![account_p](https://github.com/user-attachments/assets/bda11ef5-c515-4b1b-9f20-6c1e60121543)
+![history_p](https://github.com/user-attachments/assets/9131b3c8-8ad3-4013-9f02-62d451d7c9fd)
+![drops_min](https://github.com/user-attachments/assets/c57db60f-0ea8-490b-8b76-1feb393c0496)
+![total_dose](https://github.com/user-attachments/assets/6ba639bd-e7af-4342-b13e-b299e1fe65e7)
+![bmi](https://github.com/user-attachments/assets/de384275-51f8-4537-a22f-a06584f4e01b)
+![nxt_visit](https://github.com/user-attachments/assets/0ebe4b2c-e6d3-4b15-ab7d-dc46adbd1f1d)
+![ga_edd](https://github.com/user-attachments/assets/56c972b8-f6f3-441c-a9ed-5650f18c2594)
+![health_calc_WA](https://github.com/user-attachments/assets/a5d1aaba-8904-4a69-b5e3-4b8f4b81bb08)
+
+
 
 
 
