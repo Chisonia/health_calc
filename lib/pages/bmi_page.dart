@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../theme_provider.dart';
 
@@ -17,11 +20,22 @@ class BMICalculationPageState extends State<BMICalculationPage> {
   String bmiResult = '';
   String bmiInterpretation = '';
 
-  void _selectedUnit(String? newValue) {
-    if (newValue != null) {
+  List<Map<String, dynamic>> calculationHistory = []; // Keep history in the state
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();  // Load history on initialization
+  }
+
+  // Load history from shared preferences
+  Future<void> _loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? encodedData = prefs.getString('calculationHistory');
+    if (encodedData != null) {
       setState(() {
-        selectedUnit = newValue;
-        _calculateBMI(); // Recalculate BMI when the unit changes
+        calculationHistory = List<Map<String, dynamic>>.from(
+            jsonDecode(encodedData));
       });
     }
   }
@@ -32,16 +46,30 @@ class BMICalculationPageState extends State<BMICalculationPage> {
       final double weight = double.parse(weightController.text);
 
       double bmi;
+      String unit;
 
       if (selectedUnit == 'Metric (kg/m²)') {
-        bmi = weight / (height * height); // BMI calculation in metric units
+        bmi = weight / (height * height);
+        unit = 'kg/m²';
       } else {
-        bmi = (weight / (height * height)) * 703; // BMI calculation in imperial units
+        bmi = (weight / (height * height)) * 703;
+        unit = 'lbs/in²';
       }
 
       setState(() {
-        bmiResult = bmi.toStringAsFixed(2); // Format BMI result to 2 decimal places
-        bmiInterpretation = _getBMIInterpretation(bmi); // Get the interpretation
+        bmiResult = bmi.toStringAsFixed(2);
+        bmiInterpretation = _getBMIInterpretation(bmi);
+
+        // Save the calculation to history only after a valid BMI result
+        Map<String, dynamic> calculation = {
+          'type': 'BMI Calculation',
+          'result': 'BMI: $bmiResult $unit ($bmiInterpretation)',
+          'time': DateTime.now().toString(),
+          'icon': Icons.fitness_center.codePoint,
+        };
+
+        calculationHistory.add(calculation);
+        _saveAllCalculations();  // Save history after calculation
       });
     } else {
       setState(() {
@@ -49,6 +77,13 @@ class BMICalculationPageState extends State<BMICalculationPage> {
         bmiInterpretation = "";
       });
     }
+  }
+
+  // Save all calculations to SharedPreferences
+  Future<void> _saveAllCalculations() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encodedData = jsonEncode(calculationHistory);
+    await prefs.setString('calculationHistory', encodedData);
   }
 
   String _getBMIInterpretation(double bmi) {
@@ -109,7 +144,11 @@ class BMICalculationPageState extends State<BMICalculationPage> {
                 icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: Colors.deepPurple),
                 elevation: 16,
                 style: Theme.of(context).textTheme.headlineMedium,
-                onChanged: _selectedUnit,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedUnit = newValue!;
+                  });
+                },
                 hint: Text(
                   "Select Format",
                   style: Theme.of(context).textTheme.labelMedium,
@@ -127,88 +166,32 @@ class BMICalculationPageState extends State<BMICalculationPage> {
               ),
             ),
             const SizedBox(height: 24),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black54
-                    : Colors.grey[100],
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
-              ),
-              child: Center(
-                child: TextField(
-                  controller: heightController,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  decoration: InputDecoration(
-                    labelText: 'Enter Height',
-                    labelStyle: Theme.of(context).textTheme.labelMedium,
-                    border: InputBorder.none,
-                  ),
-                  style: Theme.of(context).textTheme.headlineMedium,
-                  onChanged: (value) => _calculateBMI(),
-                ),
+            buildTextField(
+              label: "Enter Height",
+              controller: heightController,
+              textAlign: TextAlign.start,
+            ),
+            const SizedBox(height: 24),
+            buildTextField(
+              label: "Enter Weight",
+              controller: weightController,
+              textAlign: TextAlign.start,
+
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _calculateBMI,  // Calculate BMI on button press
+              child: const Text(
+                  'Calculate BMI'
               ),
             ),
             const SizedBox(height: 24),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black54
-                    : Colors.grey[100],
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
+            if (bmiResult.isNotEmpty)
+              Text(
+                "BMI Result: $bmiResult",
+                style: Theme.of(context).textTheme.headlineMedium,
+                textAlign: TextAlign.center,
               ),
-              child: Center(
-                child: TextField(
-                  controller: weightController,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  decoration: InputDecoration(
-                    labelText: 'Enter Weight',
-                    labelStyle: Theme.of(context).textTheme.labelMedium,
-                    border: InputBorder.none,
-                  ),
-                  style: Theme.of(context).textTheme.headlineMedium,
-                  onChanged: (value) => _calculateBMI(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black54
-                    : Colors.deepOrangeAccent.shade100,
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Text(
-                  bmiResult.isEmpty
-                      ? "BMI result will appear here."
-                      : "BMI Result: $bmiResult",
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
             if (bmiInterpretation.isNotEmpty)
               Text(
                 "Interpretation: $bmiInterpretation",
@@ -216,6 +199,38 @@ class BMICalculationPageState extends State<BMICalculationPage> {
                 textAlign: TextAlign.center,
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Custom text field UI
+  Widget buildTextField({
+    required String label,
+    required TextEditingController controller,
+    TextAlign textAlign = TextAlign.start,
+  }) {
+    return Container(
+      height: 60.0,
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.black54
+            : Colors.grey[50],
+        borderRadius: BorderRadius.circular(24.0),
+        border: Border.all(
+          color: Colors.deepPurple,
+          width: 2.0,
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        textAlign: textAlign,
+        decoration: InputDecoration(
+          labelStyle: Theme.of(context).textTheme.labelMedium,
+          labelText: label,
+          border: InputBorder.none,
         ),
       ),
     );

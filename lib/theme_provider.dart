@@ -48,8 +48,8 @@ class ThemeProvider with ChangeNotifier {
           fontSize: 16,
           fontFamily: "assets/fonts/Merriweather-Bold.ttf",
         ),
-        displaySmall: TextStyle(
-          color:Colors.lightBlueAccent[100],
+        displaySmall: const TextStyle(
+          color:Colors.white,
           fontSize: 12,
           fontFamily: "assets/fonts/Merriweather-Bold.ttf",
         ),
@@ -141,7 +141,7 @@ class ThemeProvider with ChangeNotifier {
           fontFamily: "assets/fonts/Merriweather-BlackItalic.ttf",
         ),
         displaySmall: TextStyle(
-          color:Colors.black87,
+          color:Colors.deepPurple,
           fontSize: 12,
           fontFamily: "assets/fonts/Merriweather-BlackItalic.ttf",
         ),

@@ -222,24 +222,27 @@ class HomePageState extends State<HomePage> {
           Expanded(
             child: calculationHistory.isEmpty
                 ? Center(
-                child: Text(
-                    'No Recent Calculations',
-                    style: Theme.of(context).textTheme.displayMedium
-                )
+              child: Text(
+                'No Recent Calculations',
+                style: Theme.of(context).textTheme.displayMedium,
+              ),
             )
                 : ListView.builder(
-              itemCount: calculationHistory.length,
+              itemCount: calculationHistory.length < 4
+                  ? calculationHistory.length
+                  : 4, // Show only the last 4 entries
               itemBuilder: (context, index) {
-                final entry = calculationHistory[index];
+                final entry = calculationHistory[
+                calculationHistory.length - 1 - index]; // Get the latest first
                 return ListTile(
-                  leading: Image.asset(entry['iconPath'], width: 24, height: 24), // Use Image.asset for custom icons
+                  leading: Image.asset(entry['iconPath'], width: 24, height: 24),
                   title: Text(
-                      entry['type'],
-                      style: Theme.of(context).textTheme.bodyMedium,
+                    entry['type'],
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   subtitle: Text(
-                      entry['result'],
-                      style: Theme.of(context).textTheme.titleSmall
+                    entry['result'],
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
                 );
               },

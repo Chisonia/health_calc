@@ -10,6 +10,7 @@ import 'package:health_calc/pages/ga_edd_page.dart';
 import 'package:health_calc/pages/nxt_visit_page.dart';
 
 void main() {
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeProvider(), // Provide ThemeProvider

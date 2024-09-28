@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Global variable to hold the latest appointment date summary
 String recentAppointmentDate = '';
@@ -21,13 +23,34 @@ class NextVisitPage extends StatefulWidget {
 class NextVisitPageState extends State<NextVisitPage> {
   late String selectedInterval;
   String appointmentDate = 'Next visit will appear here'; // Default text
+  List<Map<String, dynamic>> calculationHistory = []; // Calculation history
 
   @override
   void initState() {
     super.initState();
     selectedInterval = widget.selectedInterval.isEmpty ? '' : widget.selectedInterval;
+    _loadHistory();
   }
 
+  // Load history from shared preferences
+  Future<void> _loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? encodedData = prefs.getString('calculationHistory');
+    if (encodedData != null) {
+      setState(() {
+        calculationHistory = List<Map<String, dynamic>>.from(jsonDecode(encodedData));
+      });
+    }
+  }
+
+  // Save history to shared preferences
+  Future<void> _saveAllCalculations() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encodedData = jsonEncode(calculationHistory);
+    await prefs.setString('calculationHistory', encodedData);
+  }
+
+  // Calculate the next appointment date based on the selected interval
   void _calculateAppointmentDate() {
     Duration duration;
     switch (selectedInterval) {
@@ -64,6 +87,17 @@ class NextVisitPageState extends State<NextVisitPage> {
       appointmentDate = DateFormat('EEEE, MMMM d, yyyy').format(nextAppointment);
       // Update the global variable with the latest appointment date
       recentAppointmentDate = appointmentDate;
+
+      // Add the new appointment calculation to the history
+      Map<String, dynamic> calculation = {
+        'type': 'Next Visit Calculation',
+        'result': appointmentDate,
+        'time': DateTime.now().toString(),
+        'icon': Icons.calendar_today.codePoint,
+      };
+
+      calculationHistory.add(calculation);
+      _saveAllCalculations(); // Save updated history
     });
   }
 
@@ -105,8 +139,9 @@ class NextVisitPageState extends State<NextVisitPage> {
                 isExpanded: true,
                 value: selectedInterval.isEmpty ? null : selectedInterval,
                 hint: Text(
-                    "Select interval",
-                    style: Theme.of(context).textTheme.labelMedium,),
+                  "Select interval",
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
                 icon: const Icon(
                     Icons.arrow_drop_down_circle_outlined,
                     color: Colors.deepPurple
@@ -129,8 +164,8 @@ class NextVisitPageState extends State<NextVisitPage> {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(
-                        value,
-                        style: Theme.of(context).textTheme.headlineMedium,
+                      value,
+                      style: Theme.of(context).textTheme.headlineMedium,
                     ),
                   );
                 }).toList(),
@@ -141,7 +176,7 @@ class NextVisitPageState extends State<NextVisitPage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100],
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -152,7 +187,7 @@ class NextVisitPageState extends State<NextVisitPage> {
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Text(
                   appointmentDate,
-                    style: Theme.of(context).textTheme.headlineMedium,
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),

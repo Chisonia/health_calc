@@ -1,4 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../theme_provider.dart';
 
 class WeightForAgePage extends StatefulWidget {
   final String selectedAgeFormat;
@@ -20,49 +24,75 @@ class WeightForAgePage extends StatefulWidget {
 
 class WeightForAgePageState extends State<WeightForAgePage> {
   late String selectedAgeFormat;
-  late TextEditingController ageController; // TextEditingController for the age input
-  String expectedWeightAge = 'Expected Weight Range will appear here.'; // default text
+  late TextEditingController ageController;
+  String expectedWeightAge = '';
+  List<Map<String, dynamic>> calculationHistory = []; // Calculation history
 
   @override
   void initState() {
     super.initState();
     selectedAgeFormat = widget.selectedAgeFormat.isEmpty ? '' : widget.selectedAgeFormat;
-    ageController = TextEditingController(); // Initialize the TextEditingController
+    ageController = TextEditingController();
+    _loadHistory(); // Load calculation history
   }
 
   @override
   void dispose() {
-    ageController.dispose(); // Dispose the controller
+    ageController.dispose();
     super.dispose();
   }
 
-  void _calculateExpectedWeight(String age) {
-    if (age.isNotEmpty) {
-      final double? ageValue = double.tryParse(age);
+  // Load history from shared preferences
+  Future<void> _loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? encodedData = prefs.getString('calculationHistory');
+    if (encodedData != null) {
+      setState(() {
+        calculationHistory = List<Map<String, dynamic>>.from(jsonDecode(encodedData));
+      });
+    }
+  }
+
+  // Save history to shared preferences
+  Future<void> _saveAllCalculations() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encodedData = jsonEncode(calculationHistory);
+    await prefs.setString('calculationHistory', encodedData);
+  }
+
+  void _calculateExpectedWeight() {
+    final String ageText = ageController.text;
+    if (ageText.isNotEmpty) {
+      final double? ageValue = double.tryParse(ageText);
       if (ageValue != null) {
+        String result;
         if (selectedAgeFormat == 'Months' && ageValue < 12) {
-          // For children aged 0 to 11 months
           final expectedWeight = (ageValue + 9) / 2;
-          setState(() {
-            expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
-          });
+          result = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
         } else if (selectedAgeFormat == 'Years' && ageValue > 0 && ageValue <= 4) {
-          // For children 1 year to 4 years
           final expectedWeight = 2 * (ageValue + 5);
-          setState(() {
-            expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
-          });
+          result = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
         } else if (selectedAgeFormat == 'Years' && ageValue > 4 && ageValue <= 14) {
-          // For children 5 year to 14 years
           final expectedWeight = 4 * ageValue;
-          setState(() {
-            expectedWeightAge = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
-          });
+          result = 'Expected Weight: ${expectedWeight.toStringAsFixed(2)} kg';
         } else {
-          setState(() {
-            expectedWeightAge = "Please enter a valid age for the selected format.";
-          });
+          result = "Please enter a valid age for the selected format.";
         }
+
+        setState(() {
+          expectedWeightAge = result;
+
+          // Save to history after calculation
+          Map<String, dynamic> calculation = {
+            'type': 'Weight for Age Calculation',
+            'result': result,
+            'time': DateTime.now().toString(),
+            'icon': Icons.monitor_weight.codePoint,
+          };
+
+          calculationHistory.add(calculation);
+          _saveAllCalculations();  // Save history after calculation
+        });
       } else {
         setState(() {
           expectedWeightAge = "Invalid age input.";
@@ -77,6 +107,8 @@ class WeightForAgePageState extends State<WeightForAgePage> {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -92,23 +124,9 @@ class WeightForAgePageState extends State<WeightForAgePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24),
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Select the age format: \n",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  TextSpan(
-                    text: '"Months" for children under 1 year, \n',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  TextSpan(
-                    text: '"Years" for 1 year to 14 years.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
+            Text(
+              "Select the age format:",
+              style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.start,
             ),
             const SizedBox(height: 24),
@@ -126,90 +144,76 @@ class WeightForAgePageState extends State<WeightForAgePage> {
               child: DropdownButton<String>(
                 isExpanded: true,
                 value: selectedAgeFormat.isEmpty ? null : selectedAgeFormat,
-                icon: const Icon(
-                  Icons.arrow_drop_down_circle_outlined,
-                  color: Colors.deepPurple,
-                ),
+                icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: Colors.deepPurple),
                 elevation: 16,
                 style: Theme.of(context).textTheme.headlineMedium,
-                hint: Text(
-                  "Select Age Format",
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
                 onChanged: (String? value) {
                   if (value != null) {
                     setState(() {
                       selectedAgeFormat = value;
-                      // Recalculate expected weight with the current age
-                      _calculateExpectedWeight(ageController.text); // Use controller text
                     });
                     widget.onAgeFormatChanged(value);
                   }
                 },
-                items: <String>['Months', 'Years']
-                    .map<DropdownMenuItem<String>>((String value) {
+                hint: Text(
+                  "Select Age Format",
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
+                items: <String>['Months', 'Years'].map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(
-                      value,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
+                    child: Text(value, style: Theme.of(context).textTheme.headlineMedium),
                   );
                 }).toList(),
               ),
             ),
             const SizedBox(height: 24),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100], // Changes based on theme
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
-              ),
-              child: Center(
-                child: TextField(
-                  controller: ageController, // Set the controller
-                  onChanged: (value) {
-                    widget.onAgeChanged(value);
-                    _calculateExpectedWeight(value); // Calculate weight when age is changed
-                  },
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  decoration: InputDecoration(
-                    labelText: "Enter Child's Age",
-                    labelStyle: Theme.of(context).textTheme.labelMedium,
-                    border: InputBorder.none,
-                  ),
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-              ),
+            buildTextField(
+              label: "Enter Child's Age",
+              controller: ageController,
             ),
             const SizedBox(height: 24),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[200],
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  expectedWeightAge,
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
+            ElevatedButton(
+              onPressed: _calculateExpectedWeight,
+              child: const Text("Calculate"),
+            ),
+            const SizedBox(height: 24),
+            if (expectedWeightAge.isNotEmpty)
+            Center(
+              child: Text(
+                expectedWeightAge,
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Reusable text field widget
+  Widget buildTextField({required String label, required TextEditingController controller}) {
+    return Container(
+      height: 60.0,
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
+        borderRadius: BorderRadius.circular(24.0),
+        border: Border.all(
+          color: Colors.deepPurple,
+          width: 2.0,
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        textInputAction: TextInputAction.done,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: Theme.of(context).textTheme.labelMedium,
+          border: InputBorder.none,
+        ),
+        style: Theme.of(context).textTheme.headlineMedium,
       ),
     );
   }

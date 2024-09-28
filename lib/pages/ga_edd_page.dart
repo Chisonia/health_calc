@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GestationalAgePage extends StatefulWidget {
   const GestationalAgePage({super.key});
@@ -14,14 +16,30 @@ class GestationalAgePageState extends State<GestationalAgePage> {
   String expectedDeliveryDate = '';
 
   final TextEditingController dateController = TextEditingController();
+  List<Map<String, dynamic>> calculationHistory = [];
 
-  void _selectOption(String? option) {
-    if (option != null) {
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory(); // Load previous calculations from SharedPreferences
+  }
+
+  // Load history from SharedPreferences
+  Future<void> _loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? encodedData = prefs.getString('calculationHistory');
+    if (encodedData != null) {
       setState(() {
-        selectedOption = option;
-        _calculateGestationalAgeAndEDD(); // Recalculate when option changes
+        calculationHistory = List<Map<String, dynamic>>.from(jsonDecode(encodedData));
       });
     }
+  }
+
+  // Save all calculations to SharedPreferences
+  Future<void> _saveAllCalculations() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encodedData = jsonEncode(calculationHistory);
+    await prefs.setString('calculationHistory', encodedData);
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -34,8 +52,7 @@ class GestationalAgePageState extends State<GestationalAgePage> {
     if (picked != null) {
       setState(() {
         selectedDate = picked.toLocal().toString().split(' ')[0];
-        dateController.text = selectedDate; // Update controller text
-        _calculateGestationalAgeAndEDD(); // Recalculate when date changes
+        dateController.text = selectedDate;
       });
     }
   }
@@ -62,12 +79,23 @@ class GestationalAgePageState extends State<GestationalAgePage> {
           expectedDeliveryDate = date.add(const Duration(days: 280)).toString().split(' ')[0];
         });
       }
+
+      // Save the result to history
+      Map<String, dynamic> calculation = {
+        'type': 'Gestational Age Calculation',
+        'result': 'GA: $gestationalAge, EDD: $expectedDeliveryDate',
+        'time': DateTime.now().toString(),
+        'icon': Icons.pregnant_woman.codePoint,
+      };
+
+      calculationHistory.add(calculation);
+      _saveAllCalculations();  // Save history
     }
   }
 
   @override
   void dispose() {
-    dateController.dispose(); // Dispose of the controller when done
+    dateController.dispose();
     super.dispose();
   }
 
@@ -98,7 +126,9 @@ class GestationalAgePageState extends State<GestationalAgePage> {
               height: 60.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.black54
+                    : Colors.grey[50],
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
                   color: Colors.deepPurple,
@@ -111,7 +141,11 @@ class GestationalAgePageState extends State<GestationalAgePage> {
                 icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: Colors.deepPurple),
                 elevation: 16,
                 style: Theme.of(context).textTheme.headlineMedium,
-                onChanged: _selectOption,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedOption = newValue!;
+                  });
+                },
                 hint: Text(
                   "Select Format",
                   style: Theme.of(context).textTheme.labelMedium,
@@ -138,7 +172,7 @@ class GestationalAgePageState extends State<GestationalAgePage> {
                   decoration: BoxDecoration(
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.black54
-                        : Colors.grey[100],
+                        : Colors.grey[50],
                     borderRadius: BorderRadius.circular(24.0),
                     border: Border.all(
                       color: Colors.deepPurple,
@@ -152,58 +186,33 @@ class GestationalAgePageState extends State<GestationalAgePage> {
                         labelText: "Select Date",
                         labelStyle: Theme.of(context).textTheme.labelMedium,
                         border: InputBorder.none,
-                        filled: true,
-                        fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[100],
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.deepOrangeAccent.shade100,
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _calculateGestationalAgeAndEDD,  // Calculate GA and EDD on button press
+              child: const Text('Calculate GA and EDD'),
+            ),
+            const SizedBox(height: 24),
+            if (gestationalAge.isNotEmpty)
+              Center(
                 child: Text(
-                  gestationalAge.isNotEmpty
-                      ? "Gestational Age is $gestationalAge"
-                      : "Gestational Age will appear here.",
+                  "Gestational Age: $gestationalAge",
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.lightBlueAccent.shade100,
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
+            const SizedBox(height: 24),
+            if (expectedDeliveryDate.isNotEmpty)
+              Center(
                 child: Text(
-                  expectedDeliveryDate.isNotEmpty
-                      ? "Expected Delivery Date is $expectedDeliveryDate"
-                      : "Expected Delivery Date will appear here.",
+                  "Expected Delivery Date: $expectedDeliveryDate",
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
-            ),
           ],
         ),
       ),
