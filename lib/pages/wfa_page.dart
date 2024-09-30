@@ -87,7 +87,6 @@ class WeightForAgePageState extends State<WeightForAgePage> {
             'type': 'Weight for Age Calculation',
             'result': result,
             'time': DateTime.now().toString(),
-            'icon': Icons.monitor_weight.codePoint,
           };
 
           calculationHistory.add(calculation);
@@ -125,7 +124,7 @@ class WeightForAgePageState extends State<WeightForAgePage> {
           children: [
             const SizedBox(height: 24),
             Text(
-              "Select the age format:",
+              'Select the age format:\n "Month" for age below 1 year\n "Years" for age 1 year and above',
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.start,
             ),

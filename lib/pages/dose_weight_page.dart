@@ -55,7 +55,6 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
     final newEntry = {
       'type': 'Dosage Calculation',
       'result': 'Total Dosage: $totalDosage mg, Dosage: $dosageInMl ml',
-      'icon': Icons.medication.codePoint,
       'time': DateTime.now().toString(),
     };
 

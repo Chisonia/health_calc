@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:health_calc/pages/wfa_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widget_box/cal_button.dart';
 import 'bmi_page.dart';
 import 'dose_weight_page.dart';
@@ -10,7 +12,8 @@ import 'history_page.dart'; // Import the HistoryPage
 import 'profile_page.dart'; // Import the ProfilePage
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, required this.calculationHistory});
+  final List<Map<String, dynamic>> calculationHistory;
 
   @override
   HomePageState createState() => HomePageState();
@@ -20,21 +23,30 @@ class HomePageState extends State<HomePage> {
   int _selectedIndex = 0; // Track the selected index
   List<Map<String, dynamic>> calculationHistory = []; // Store calculation history
 
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory(); // Load history on initialization
+  }
+
+  // Load history from shared preferences
+  Future<void> _loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? encodedData = prefs.getString('calculationHistory');
+    if (encodedData != null) {
+      setState(() {
+        calculationHistory = List<Map<String, dynamic>>.from(jsonDecode(encodedData));
+      });
+    } else {
+      // If no history in SharedPreferences, use the passed-in calculationHistory
+      calculationHistory = widget.calculationHistory;
+    }
+  }
+
   // Method to handle bottom navigation
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-    });
-  }
-
-  // Method to add calculation results to history
-  void _addCalculationToHistory(String type, String result, String iconPath) {
-    setState(() {
-      calculationHistory.add({
-        'type': type,
-        'result': result,
-        'iconPath': iconPath, // Store the icon path
-      });
     });
   }
 
@@ -102,7 +114,7 @@ class HomePageState extends State<HomePage> {
           Text(
             'Click On The Icons Below To Quickly Perform Your'
                 ' Desired Calculation.',
-              style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 32),
           SizedBox(
@@ -116,7 +128,7 @@ class HomePageState extends State<HomePage> {
                   'Weight 4 Age',
                   'assets/icons/child.png',
                       () async {
-                    final result = await Navigator.push(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => WeightForAgePage(
@@ -127,31 +139,25 @@ class HomePageState extends State<HomePage> {
                         ),
                       ),
                     );
-                    if (result != null) {
-                      _addCalculationToHistory('Weight for Age', result['result'], 'assets/icons/child.png');
-                    }
                   },
                 ),
                 buildCalculationButton(
                   'GA/EDD',
                   'assets/icons/pregnant.png',
                       () async {
-                    final result = await Navigator.push(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const GestationalAgePage(),
                       ),
                     );
-                    if (result != null) {
-                      _addCalculationToHistory('GA/EDD', result['result'], 'assets/icons/pregnant.png');
-                    }
                   },
                 ),
                 buildCalculationButton(
                   'Next Visit',
                   'assets/icons/calendar.png',
                       () async {
-                    final result = await Navigator.push(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => NextVisitPage(
@@ -160,54 +166,42 @@ class HomePageState extends State<HomePage> {
                         ),
                       ),
                     );
-                    if (result != null) {
-                      _addCalculationToHistory('Next Visit', result['result'], 'assets/icons/calendar.png');
-                    }
                   },
                 ),
                 buildCalculationButton(
                   'BMI',
                   'assets/icons/bmi.png',
                       () async {
-                    final result = await Navigator.push(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const BMICalculationPage(),
                       ),
                     );
-                    if (result != null) {
-                      _addCalculationToHistory('BMI', result['result'], 'assets/icons/bmi.png');
-                    }
                   },
                 ),
                 buildCalculationButton(
                   'Dose/Weight',
                   'assets/icons/syringe.png', // Custom icon path
                       () async {
-                    final result = await Navigator.push(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const DosePerWeightPage(),
                       ),
                     );
-                    if (result != null) {
-                      _addCalculationToHistory('Dose/Weight', result['result'], 'assets/icons/syringe.png'); // Custom icon path
-                    }
                   },
                 ),
                 buildCalculationButton(
                   'Drops/Minute',
                   'assets/icons/drip.png',
                       () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const DropsPerMinutePage(),
-                      ),
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DropsPerMinutePage(),
+                        )
                     );
-                    if (result != null) {
-                      _addCalculationToHistory('Drops/Minute', result['result'], 'assets/icons/drip.png');
-                    }
                   },
                 ),
               ],
@@ -234,15 +228,33 @@ class HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 final entry = calculationHistory[
                 calculationHistory.length - 1 - index]; // Get the latest first
+                // Determine the icon based on the calculation type
+                String iconPath = getIconPath(entry['type']);
                 return ListTile(
-                  leading: Image.asset(entry['iconPath'], width: 24, height: 24),
+                  leading: SizedBox(
+                    width: 24,  // Set desired width
+                    height: 24, // Set desired height
+                    child: Image.asset(iconPath), // Use the determined icon
+                  ),
                   title: Text(
                     entry['type'],
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold
+                    ),
                   ),
                   subtitle: Text(
                     entry['result'],
-                    style: Theme.of(context).textTheme.titleSmall,
+                    style: const TextStyle(
+                        fontSize: 12
+                    ),
+                  ),
+                  trailing: Text(
+                    // Formatting the time for better display
+                    DateTime.parse(entry['time']).toLocal().toString().split('.')[0],
+                    style: const TextStyle(
+                        fontStyle: FontStyle.italic
+                    ),
                   ),
                 );
               },
@@ -251,5 +263,24 @@ class HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  String getIconPath(String calculationType) {
+    switch (calculationType) {
+      case 'BMI Calculation':
+        return "assets/icons/bmi.png";
+      case 'Gestational Age Calculation':
+        return "assets/icons/pregnant.png";
+      case 'Drops Per Minute Calculation':
+        return 'assets/icons/drip.png';
+      case 'Weight for Age Calculation':
+        return 'assets/icons/child.png';
+      case 'Next Visit Calculation':
+        return 'assets/icons/calendar.png';
+      case 'Dosage Calculation':
+        return 'assets/icons/syringe.png';
+      default:
+        return 'assets/icons/health_calc_logo.png'; // Fallback icon
+    }
   }
 }

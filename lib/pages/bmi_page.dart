@@ -65,7 +65,6 @@ class BMICalculationPageState extends State<BMICalculationPage> {
           'type': 'BMI Calculation',
           'result': 'BMI: $bmiResult $unit ($bmiInterpretation)',
           'time': DateTime.now().toString(),
-          'icon': Icons.fitness_center.codePoint,
         };
 
         calculationHistory.add(calculation);
@@ -214,9 +213,7 @@ class BMICalculationPageState extends State<BMICalculationPage> {
       height: 60.0,
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.black54
-            : Colors.grey[50],
+        color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
         borderRadius: BorderRadius.circular(24.0),
         border: Border.all(
           color: Colors.deepPurple,
@@ -226,12 +223,13 @@ class BMICalculationPageState extends State<BMICalculationPage> {
       child: TextField(
         controller: controller,
         keyboardType: TextInputType.number,
-        textAlign: textAlign,
+        textInputAction: TextInputAction.done,
         decoration: InputDecoration(
-          labelStyle: Theme.of(context).textTheme.labelMedium,
           labelText: label,
+          labelStyle: Theme.of(context).textTheme.labelMedium,
           border: InputBorder.none,
         ),
+        style: Theme.of(context).textTheme.headlineMedium,
       ),
     );
   }

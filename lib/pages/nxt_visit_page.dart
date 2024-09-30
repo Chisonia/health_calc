@@ -93,7 +93,6 @@ class NextVisitPageState extends State<NextVisitPage> {
         'type': 'Next Visit Calculation',
         'result': appointmentDate,
         'time': DateTime.now().toString(),
-        'icon': Icons.calendar_today.codePoint,
       };
 
       calculationHistory.add(calculation);

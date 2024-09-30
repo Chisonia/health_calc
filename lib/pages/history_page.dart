@@ -66,13 +66,27 @@ class HistoryPageState extends State<HistoryPage> {
         itemCount: calculationHistory.length,
         itemBuilder: (context, index) {
           final calculation = calculationHistory[index];
+
+          // Determine the icon based on the calculation type
+          String iconPath = getIconPath(calculation['type']);
+
           return ListTile(
-            leading: Icon(IconData(calculation['icon'], fontFamily: 'MaterialIcons')),
-            title: Text(calculation['type']),
+            leading: SizedBox(
+              width: 24,  // Set desired width
+              height: 24, // Set desired height
+              child: Image.asset(iconPath), // Use the determined icon
+            ),
+            title: Text(
+                calculation['type'],
+          style: Theme.of(context).textTheme.headlineMedium,
+            ),
             subtitle: Text(calculation['result']),
             trailing: Text(
               // Formatting the time for better display
               DateTime.parse(calculation['time']).toLocal().toString().split('.')[0],
+              style: const TextStyle(
+                  fontStyle: FontStyle.italic
+              ),
             ),
           );
         },
@@ -84,5 +98,24 @@ class HistoryPageState extends State<HistoryPage> {
         ),
       ),
     );
+  }
+
+  String getIconPath(String calculationType) {
+    switch (calculationType) {
+      case 'BMI Calculation':
+        return "assets/icons/bmi.png";
+      case 'Gestational Age Calculation':
+        return "assets/icons/pregnant.png";
+      case 'Drops Per Minute Calculation':
+        return 'assets/icons/drip.png';
+      case 'Weight for Age Calculation':
+        return 'assets/icons/child.png';
+      case 'Next Visit Calculation':
+        return 'assets/icons/calendar.png';
+      case 'Dosage Calculation':
+        return 'assets/icons/syringe.png';
+      default:
+        return 'assets/icons/health_calc_logo.png'; // Fallback icon
+    }
   }
 }

@@ -63,7 +63,6 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
             'type': 'Drops Per Minute Calculation',
             'result': 'Drops/Min: $dropsPerMinuteResult',
             'time': DateTime.now().toString(),
-            'icon': Icons.local_drink.codePoint,
           };
 
           calculationHistory.add(calculation);
@@ -188,23 +187,23 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
       height: 60.0,
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.black54
-            : Colors.grey[50],
+        color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
         borderRadius: BorderRadius.circular(24.0),
         border: Border.all(
           color: Colors.deepPurple,
           width: 2.0,
         ),
       ),
-      child:TextField(
+      child: TextField(
         controller: controller,
         keyboardType: TextInputType.number,
+        textInputAction: TextInputAction.done,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: Theme.of(context).textTheme.labelMedium,
           border: InputBorder.none,
-        )
+        ),
+        style: Theme.of(context).textTheme.headlineMedium,
       ),
     );
   }

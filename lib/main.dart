@@ -29,7 +29,7 @@ class HealthCalcApp extends StatelessWidget {
     return MaterialApp(
       title: 'Health Calculators',
       theme: themeProvider.themeData, // Set the theme based on provider
-      home: const HomePage(), // Set the homepage here
+      home: const HomePage(calculationHistory: [],), // Set the homepage here
       routes: {
         '/wfa': (context) => WeightForAgePage(
           selectedAgeFormat: '',

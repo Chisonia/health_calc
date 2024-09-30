@@ -85,7 +85,6 @@ class GestationalAgePageState extends State<GestationalAgePage> {
         'type': 'Gestational Age Calculation',
         'result': 'GA: $gestationalAge, EDD: $expectedDeliveryDate',
         'time': DateTime.now().toString(),
-        'icon': Icons.pregnant_woman.codePoint,
       };
 
       calculationHistory.add(calculation);
@@ -183,10 +182,11 @@ class GestationalAgePageState extends State<GestationalAgePage> {
                     child: TextField(
                       controller: dateController,
                       decoration: InputDecoration(
-                        labelText: "Select Date",
+                        labelText: 'Select Date',
                         labelStyle: Theme.of(context).textTheme.labelMedium,
                         border: InputBorder.none,
                       ),
+                      style: Theme.of(context).textTheme.headlineMedium,
                     ),
                   ),
                 ),
