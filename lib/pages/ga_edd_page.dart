@@ -1,6 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../widget_box/calculateButton.dart';
+import '../widget_box/calculatePageTitle.dart';
+import '../widget_box/customDropdrown.dart';
+import '../widget_box/customTextfield.dart';
+import '../widget_box/infoText.dart';
+import '../widget_box/resultContainer.dart';
 
 class GestationalAgePage extends StatefulWidget {
   const GestationalAgePage({super.key});
@@ -102,118 +108,61 @@ class GestationalAgePageState extends State<GestationalAgePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'CALCULATE GESTATIONAL AGE AND EDD',
-          style: Theme.of(context).textTheme.titleMedium,
+        title: CustomTextWidget(
+          text: 'GESTATIONAL AGE/EDD',
         ),
         centerTitle: true,
         elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 24),
-            Text(
-              "Select how to calculate GA and EDD.",
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.start,
-            ),
-            const SizedBox(height: 24),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black54
-                    : Colors.grey[50],
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomInfoTextWidget(
+                  text:'Select "Weeks" or "Months" to Calculate'
               ),
-              child: DropdownButton<String>(
-                isExpanded: true,
+              const SizedBox(height: 20),
+              CustomDropdown(
                 value: selectedOption.isEmpty ? null : selectedOption,
-                icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: Colors.deepPurple),
-                elevation: 16,
-                style: Theme.of(context).textTheme.headlineMedium,
+                hint: "Select Format",
+                items: <String>['Weeks', 'Months'],
                 onChanged: (String? newValue) {
                   setState(() {
                     selectedOption = newValue!;
                   });
                 },
-                hint: Text(
-                  "Select Format",
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                items: <String>['Weeks', 'Months']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                  );
-                }).toList(),
               ),
-            ),
-            const SizedBox(height: 24),
-            GestureDetector(
-              onTap: () => _selectDate(context),
-              child: AbsorbPointer(
-                child: Container(
-                  height: 60.0,
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.black54
-                        : Colors.grey[50],
-                    borderRadius: BorderRadius.circular(24.0),
-                    border: Border.all(
-                      color: Colors.deepPurple,
-                      width: 2.0,
-                    ),
-                  ),
-                  child: Center(
-                    child: TextField(
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () => _selectDate(context),
+                child: AbsorbPointer(
+                  child: CustomTextField(
                       controller: dateController,
-                      decoration: InputDecoration(
-                        labelText: 'Select Date',
-                        labelStyle: Theme.of(context).textTheme.labelMedium,
-                        border: InputBorder.none,
-                      ),
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
+                      label: 'Select Date'
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _calculateGestationalAgeAndEDD,  // Calculate GA and EDD on button press
-              child: const Text('Calculate GA and EDD'),
-            ),
-            const SizedBox(height: 24),
-            if (gestationalAge.isNotEmpty)
-              Center(
-                child: Text(
-                  "Gestational Age: $gestationalAge",
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
+              const SizedBox(height: 20),
+              CustomElevatedButton(
+                onPressed: _calculateGestationalAgeAndEDD,
+                text: 'Calculate GA and EDD',
               ),
-            const SizedBox(height: 24),
-            if (expectedDeliveryDate.isNotEmpty)
-              Center(
-                child: Text(
-                  "Expected Delivery Date: $expectedDeliveryDate",
-                  style: Theme.of(context).textTheme.headlineMedium,
+              const SizedBox(height: 20),
+              if (gestationalAge.isNotEmpty)
+                ResultContainer(
+                  label: "Gestational Age:",
+                  result: gestationalAge,
                 ),
-              ),
-          ],
+              const SizedBox(height: 20),
+              if (expectedDeliveryDate.isNotEmpty)
+                ResultContainer(
+                  label: "Expected Delivery Date:",
+                  result: expectedDeliveryDate,
+                ),
+            ],
+          ),
         ),
       ),
     );

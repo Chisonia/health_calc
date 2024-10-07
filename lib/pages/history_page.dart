@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
+import '../widget_box/calculatePageTitle.dart';
+
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key, required this.calculationHistory});
 
@@ -47,9 +49,8 @@ class HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Calculation History',
-          style: Theme.of(context).textTheme.titleMedium,
+        title: CustomTextWidget(
+          text: 'CALCULATION HISTORY',
         ),
         actions: [
           TextButton(

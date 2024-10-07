@@ -2,8 +2,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../theme_provider.dart';
+import '../widget_box/calculateButton.dart';
+import '../widget_box/calculatePageTitle.dart';
+import '../widget_box/customDropdrown.dart';
+import '../widget_box/customTextfield.dart';
+import '../widget_box/infoText.dart';
+import '../widget_box/resultContainer.dart';
 
 class DropsPerMinutePage extends StatefulWidget {
   const DropsPerMinutePage({super.key});
@@ -17,16 +22,15 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
   final TextEditingController durationController = TextEditingController();
   String selectedDropFactor = '';
   String dropsPerMinuteResult = '';
-
-  List<Map<String, dynamic>> calculationHistory = []; // Keep history in the state
+  String dropsPer15SecondsResult = '';
+  List<Map<String, dynamic>> calculationHistory = [];
 
   @override
   void initState() {
     super.initState();
-    _loadHistory();  // Load history on initialization
+    _loadHistory();
   }
 
-  // Load history from shared preferences
   Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final String? encodedData = prefs.getString('calculationHistory');
@@ -36,7 +40,7 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
       });
     }
   }
-  // Save all calculations to SharedPreferences
+
   Future<void> _saveAllCalculations() async {
     final prefs = await SharedPreferences.getInstance();
     final String encodedData = jsonEncode(calculationHistory);
@@ -54,19 +58,12 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
         final double durationInMinutes = durationInHours * 60.0;
 
         final double dropsPerMinute = (volume * dropFactor) / durationInMinutes;
+        final double dropsPer15Seconds = dropsPerMinute / 4;
 
         setState(() {
           dropsPerMinuteResult = dropsPerMinute.toStringAsFixed(0);
-
-          // Save the calculation to history only after a valid result
-          Map<String, dynamic> calculation = {
-            'type': 'Drops Per Minute Calculation',
-            'result': 'Drops/Min: $dropsPerMinuteResult',
-            'time': DateTime.now().toString(),
-          };
-
-          calculationHistory.add(calculation);
-          _saveAllCalculations();  // Save history after calculation
+          dropsPer15SecondsResult = dropsPer15Seconds.toStringAsFixed(0);
+          _addCalculationToHistory(dropsPerMinuteResult);
         });
       } catch (e) {
         setState(() {
@@ -80,130 +77,89 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
     }
   }
 
-
+  void _addCalculationToHistory(String dropsPerMinute) {
+    Map<String, dynamic> calculation = {
+      'type': 'Drops Per Minute Calculation',
+      'result': 'Drops/Min: $dropsPerMinute',
+      'time': DateTime.now().toString(),
+    };
+    calculationHistory.add(calculation);
+    _saveAllCalculations();
+  }
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<ThemeProvider>(context);
+    Provider.of<ThemeProvider>(context); // Ensure theme provider is accessed
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'CALCULATE DROPS PER MINUTE',
-          style: Theme.of(context).textTheme.titleMedium,
+        title: CustomTextWidget(
+          text: 'FLUID DROPS/MINUTE',
         ),
         centerTitle: true,
         elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 24),
-            Text(
-              "Select the drop factor and enter the volume and duration:",
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.start,
-            ),
-            const SizedBox(height: 24),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black54
-                    : Colors.grey[50],
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomInfoTextWidget(
+                text:"Select the drop factor and enter "
+                    "the volume and duration:"
               ),
-              child: DropdownButton<String>(
-                isExpanded: true,
+              const SizedBox(height: 20),
+              // Custom Dropdown for drop factor
+              CustomDropdown(
                 value: selectedDropFactor.isEmpty ? null : selectedDropFactor,
-                icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: Colors.deepPurple),
-                elevation: 16,
-                style: Theme.of(context).textTheme.headlineMedium,
+                hint: "Select Drop Factor",
+                items: <String>['10', '15', '20', '60'],
                 onChanged: (String? newValue) {
                   setState(() {
                     selectedDropFactor = newValue!;
                   });
                 },
-                hint: Text(
-                  "Select Drop Factor",
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                items: <String>['10', '15', '20']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                  );
-                }).toList(),
               ),
-            ),
-            const SizedBox(height: 24),
-            buildTextField(
-              label: "Enter Volume (ml)",
-              controller: volumeController,
-              textAlign: TextAlign.start,
-            ),
-            const SizedBox(height: 24),
-            buildTextField(
-              label: "Enter Duration (hours)",
-              controller: durationController,
-              textAlign: TextAlign.start,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _calculateDropsPerMinute,  // Calculate Drops/Min on button press
-              child: const Text('Calculate Drops/Min'),
-            ),
-            const SizedBox(height: 24),
-            if (dropsPerMinuteResult.isNotEmpty)
-              Text(
-                "$dropsPerMinuteResult Drops/Minute",
-                style: Theme.of(context).textTheme.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+              const SizedBox(height: 20),
 
-  // Custom text field UI
-  Widget buildTextField({
-    required String label,
-    required TextEditingController controller,
-    TextAlign textAlign = TextAlign.start,
-  }) {
-    return Container(
-      height: 60.0,
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
-        borderRadius: BorderRadius.circular(24.0),
-        border: Border.all(
-          color: Colors.deepPurple,
-          width: 2.0,
+              // Custom TextField for Volume (ml)
+              CustomTextField(
+                label: "Enter Volume (ml)",
+                controller: volumeController,
+              ),
+              const SizedBox(height: 20),
+
+              // Custom TextField for Duration (hours)
+              CustomTextField(
+                label: "Enter Duration (hours)",
+                controller: durationController,
+              ),
+
+              const SizedBox(height: 20),
+              CustomElevatedButton(
+                onPressed: _calculateDropsPerMinute,
+                text: 'Calculate Drops/Min',
+              ),
+              const SizedBox(height: 20),
+
+              // Display Drops Per Minute result
+              if (dropsPerMinuteResult.isNotEmpty)
+                ResultContainer(
+                  label: "Drops/Minute:",
+                  result: dropsPerMinuteResult,
+                ),
+              const SizedBox(height: 20),
+
+              // Display Drops Per 15 Seconds result
+              if (dropsPer15SecondsResult.isNotEmpty)
+                ResultContainer(
+                  label: "Drop(s)/15 Seconds:",
+                  result: dropsPer15SecondsResult,
+                ),
+            ],
+          ),
         ),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        textInputAction: TextInputAction.done,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: Theme.of(context).textTheme.labelMedium,
-          border: InputBorder.none,
-        ),
-        style: Theme.of(context).textTheme.headlineMedium,
       ),
     );
   }

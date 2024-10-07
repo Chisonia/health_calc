@@ -2,8 +2,9 @@
     android:versionCode="1.0"
     android:versionName="head">
     <application
-        android:icon="@mipmap-xhdpi/health_calc_logo"
-        android:label="health_calc">
+        android:label="health_calc"
+        android:icon="@mipmap/health_calc_logo"
+        >
         <activity
             android:name="com.example.health_calc.MainActivity"
             android:exported="true"

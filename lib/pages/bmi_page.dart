@@ -5,6 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../theme_provider.dart';
+import '../widget_box/calculateButton.dart';
+import '../widget_box/calculatePageTitle.dart';
+import '../widget_box/customDropdrown.dart';
+import '../widget_box/customTextfield.dart';
+import '../widget_box/infoText.dart';
+import '../widget_box/resultContainer.dart';
 
 class BMICalculationPage extends StatefulWidget {
   const BMICalculationPage({super.key});
@@ -20,12 +26,13 @@ class BMICalculationPageState extends State<BMICalculationPage> {
   String bmiResult = '';
   String bmiInterpretation = '';
 
-  List<Map<String, dynamic>> calculationHistory = []; // Keep history in the state
+  List<Map<String, dynamic>> calculationHistory = [
+  ]; // Keep history in the state
 
   @override
   void initState() {
     super.initState();
-    _loadHistory();  // Load history on initialization
+    _loadHistory(); // Load history on initialization
   }
 
   // Load history from shared preferences
@@ -68,7 +75,7 @@ class BMICalculationPageState extends State<BMICalculationPage> {
         };
 
         calculationHistory.add(calculation);
-        _saveAllCalculations();  // Save history after calculation
+        _saveAllCalculations(); // Save history after calculation
       });
     } else {
       setState(() {
@@ -88,11 +95,11 @@ class BMICalculationPageState extends State<BMICalculationPage> {
   String _getBMIInterpretation(double bmi) {
     if (bmi < 18.5) {
       return "Underweight";
-    } else if (bmi >= 18.5 && bmi < 24.9) {
+    } else if (bmi >= 18.5 && bmi < 25.0) {
       return "Normal weight";
-    } else if (bmi >= 25.0 && bmi < 29.9) {
+    } else if (bmi >= 25.0 && bmi < 30.0) {
       return "Overweight";
-    } else if (bmi >= 30.0 && bmi < 34.9) {
+    } else if (bmi >= 30.0 && bmi < 35.0) {
       return "Obese";
     } else {
       return "Morbidly Obese";
@@ -105,131 +112,65 @@ class BMICalculationPageState extends State<BMICalculationPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'CALCULATE BMI',
-          style: Theme.of(context).textTheme.titleMedium,
+        title: CustomTextWidget(
+          text: 'BODY MASS INDEX',
         ),
         centerTitle: true,
         elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 24),
-            Text(
-              "Select the unit and enter the height and weight for BMI calculation:",
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.start,
-            ),
-            const SizedBox(height: 24),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black54
-                    : Colors.grey[50],
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomInfoTextWidget(
+                text: "Select the unit and enter the height and "
+                    "weight for BMI calculation",
               ),
-              child: DropdownButton<String>(
-                isExpanded: true,
+              const SizedBox(height: 20),
+              CustomDropdown(
                 value: selectedUnit.isEmpty ? null : selectedUnit,
-                icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: Colors.deepPurple),
-                elevation: 16,
-                style: Theme.of(context).textTheme.headlineMedium,
+                hint: "Select Format",
+                items: <String>['Metric (kg/m²)', 'Imperial (lbs/in²)'],
                 onChanged: (String? newValue) {
                   setState(() {
                     selectedUnit = newValue!;
                   });
                 },
-                hint: Text(
-                  "Select Format",
-                  style: Theme.of(context).textTheme.labelMedium,
+              ),
+              const SizedBox(height: 20),
+              CustomTextField(
+                label: "Enter Height",
+                controller: heightController,
+              ),
+              const SizedBox(height: 20),
+              CustomTextField(
+                label: "Enter Weight",
+                controller: weightController,
+              ),
+              const SizedBox(height: 20),
+              CustomElevatedButton(
+                onPressed: _calculateBMI,
+                text: 'Calculate BMI',
+              ),
+              const SizedBox(height: 20),
+              if (bmiResult.isNotEmpty)
+
+                ResultContainer(
+                  label: "BMI Result:",
+                  result: bmiResult,
                 ),
-                items: <String>['Metric (kg/m²)', 'Imperial (lbs/in²)']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 24),
-            buildTextField(
-              label: "Enter Height",
-              controller: heightController,
-              textAlign: TextAlign.start,
-            ),
-            const SizedBox(height: 24),
-            buildTextField(
-              label: "Enter Weight",
-              controller: weightController,
-              textAlign: TextAlign.start,
 
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _calculateBMI,  // Calculate BMI on button press
-              child: const Text(
-                  'Calculate BMI'
-              ),
-            ),
-            const SizedBox(height: 24),
-            if (bmiResult.isNotEmpty)
-              Text(
-                "BMI Result: $bmiResult",
-                style: Theme.of(context).textTheme.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
-            if (bmiInterpretation.isNotEmpty)
-              Text(
-                "Interpretation: $bmiInterpretation",
-                style: Theme.of(context).textTheme.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
-          ],
+              const SizedBox(height: 20),
+              if (bmiInterpretation.isNotEmpty)
+                ResultContainer(
+                  label: "BMI Result:",
+                  result: bmiInterpretation,
+                ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  // Custom text field UI
-  Widget buildTextField({
-    required String label,
-    required TextEditingController controller,
-    TextAlign textAlign = TextAlign.start,
-  }) {
-    return Container(
-      height: 60.0,
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
-        borderRadius: BorderRadius.circular(24.0),
-        border: Border.all(
-          color: Colors.deepPurple,
-          width: 2.0,
-        ),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        textInputAction: TextInputAction.done,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: Theme.of(context).textTheme.labelMedium,
-          border: InputBorder.none,
-        ),
-        style: Theme.of(context).textTheme.headlineMedium,
       ),
     );
   }

@@ -2,33 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../widget_box/calculateButton.dart';
+import '../widget_box/calculatePageTitle.dart';
+import '../widget_box/customDropdrown.dart';
+import '../widget_box/infoText.dart';
+import '../widget_box/resultContainer.dart';
+import '../widget_box/customTextField.dart'; // Import your custom widget
 
 // Global variable to hold the latest appointment date summary
 String recentAppointmentDate = '';
 
 class NextVisitPage extends StatefulWidget {
-  final String selectedInterval;
-  final ValueChanged<String?> onIntervalChanged;
-
-  const NextVisitPage({
-    super.key,
-    required this.selectedInterval,
-    required this.onIntervalChanged,
-  });
+  const NextVisitPage({super.key, required String selectedInterval, required Null Function(String? value) onIntervalChanged});
 
   @override
   NextVisitPageState createState() => NextVisitPageState();
 }
 
 class NextVisitPageState extends State<NextVisitPage> {
-  late String selectedInterval;
-  String appointmentDate = 'Next visit will appear here'; // Default text
+  String selectedType = ''; // Interval type (days, weeks, etc.)
+  String appointmentDate = ''; // Default text for calculated date
+  String inputValue = ''; // User input for number of intervals
   List<Map<String, dynamic>> calculationHistory = []; // Calculation history
+  // Controller for input field
+  final TextEditingController _inputController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    selectedInterval = widget.selectedInterval.isEmpty ? '' : widget.selectedInterval;
     _loadHistory();
   }
 
@@ -50,42 +51,33 @@ class NextVisitPageState extends State<NextVisitPage> {
     await prefs.setString('calculationHistory', encodedData);
   }
 
-  // Calculate the next appointment date based on the selected interval
+  // Calculate the next appointment date based on the selected type and input value
   void _calculateAppointmentDate() {
+    if (_inputController.text.isEmpty || selectedType.isEmpty) return;
+
+    int value = int.tryParse(_inputController.text) ?? 0;
     Duration duration;
-    switch (selectedInterval) {
-      case '1 week':
-        duration = const Duration(days: 7);
+
+    switch (selectedType) {
+      case 'Days':
+        duration = Duration(days: value);
         break;
-      case '2 weeks':
-        duration = const Duration(days: 14);
+      case 'Weeks':
+        duration = Duration(days: value * 7);
         break;
-      case '1 month':
-        duration = const Duration(days: 30);
+      case 'Months':
+        duration = Duration(days: value * 30);
         break;
-      case '2 months':
-        duration = const Duration(days: 60);
-        break;
-      case '3 months':
-        duration = const Duration(days: 90);
-        break;
-      case '1 year':
-        duration = const Duration(days: 365);
-        break;
-      case '3 years':
-        duration = const Duration(days: 1095);
-        break;
-      case '5 years':
-        duration = const Duration(days: 1825);
+      case 'Years':
+        duration = Duration(days: value * 365);
         break;
       default:
-        duration = const Duration(days: 0);
+        duration = Duration(days: 0);
     }
 
     DateTime nextAppointment = DateTime.now().add(duration);
     setState(() {
       appointmentDate = DateFormat('EEEE, MMMM d, yyyy').format(nextAppointment);
-      // Update the global variable with the latest appointment date
       recentAppointmentDate = appointmentDate;
 
       // Add the new appointment calculation to the history
@@ -104,93 +96,53 @@ class NextVisitPageState extends State<NextVisitPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'CALCULATE NEXT VISIT DATE',
-          style: Theme.of(context).textTheme.titleMedium,
+        title: CustomTextWidget(
+          text: 'NEXT VISIT DATE',
         ),
         centerTitle: true,
         elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 36),
-            Text(
-              "Select the desired interval for the next appointment",
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.start,
-            ),
-            const SizedBox(height: 24),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
-                ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomInfoTextWidget(
+                text: "Select the interval type and enter the duration",
               ),
-              child: DropdownButton<String>(
-                isExpanded: true,
-                value: selectedInterval.isEmpty ? null : selectedInterval,
-                hint: Text(
-                  "Select interval",
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                icon: const Icon(
-                    Icons.arrow_drop_down_circle_outlined,
-                    color: Colors.deepPurple
-                ),
-                elevation: 16,
-                style: Theme.of(context).textTheme.bodyMedium,
+              const SizedBox(height: 20),
+
+              CustomDropdown(
+                value: selectedType.isEmpty ? null : selectedType,
+                hint: "Select interval type",
+                items: <String>['Days', 'Weeks', 'Months', 'Years'],
                 onChanged: (String? value) {
-                  if (value != null) {
-                    setState(() {
-                      selectedInterval = value;
-                      _calculateAppointmentDate();
-                    });
-                    widget.onIntervalChanged(value);
-                  }
+                  setState(() {
+                    selectedType = value!;
+                  });
                 },
-                items: <String>[
-                  '1 week', '2 weeks', '1 month', '2 months',
-                  '3 months', '1 year', '3 years', '5 years']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                  );
-                }).toList(),
               ),
-            ),
-            const SizedBox(height: 36),
-            Container(
-              height: 60.0,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.grey[50],
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: Colors.deepPurple,
-                  width: 2.0,
+              const SizedBox(height: 20),
+              if (selectedType.isNotEmpty)
+                CustomTextField(
+                  label: "Enter number of $selectedType",
+                  controller: _inputController, // Use the controller here
+                  textAlign: TextAlign.start, // Optional alignment
                 ),
+              const SizedBox(height: 20),
+              CustomElevatedButton(
+                onPressed: _calculateAppointmentDate,
+                text: 'Next Visit',
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Text(
-                  appointmentDate,
-                  style: Theme.of(context).textTheme.headlineMedium,
+              const SizedBox(height: 20),
+              if (appointmentDate.isNotEmpty)
+                ResultContainer(
+                  label: "Next Visit:",
+                  result: appointmentDate,
                 ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

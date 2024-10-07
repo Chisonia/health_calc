@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../widget_box/calculateButton.dart';
+import '../widget_box/calculatePageTitle.dart';
+import '../widget_box/customTextfield.dart';
+import '../widget_box/infoText.dart';
+import '../widget_box/resultContainer.dart';
 
 class DosePerWeightPage extends StatefulWidget {
   const DosePerWeightPage({super.key});
@@ -17,7 +22,7 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
   String totalDosageResult = '';
   String dosageInMlResult = '';
 
-  // Method to calculate and save dosage, only triggered on button press
+  // Method to calculate and save dosage, triggered on button press
   void _calculateDosage() {
     if (weightController.text.isNotEmpty &&
         dosageController.text.isNotEmpty &&
@@ -26,10 +31,8 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
       final double dosage = double.parse(dosageController.text);
       final double concentration = double.parse(concentrationController.text);
 
-      // Calculate total dosage required (mg)
+      // Calculate total dosage required (mg) and dosage in ml
       final double totalDosage = dosage * weight;
-
-      // Calculate dosage in ml
       final double dosageInMl = totalDosage / concentration;
 
       setState(() {
@@ -59,7 +62,6 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
     };
 
     history.add(newEntry);
-
     await prefs.setString('calculationHistory', jsonEncode(history));
   }
 
@@ -67,91 +69,60 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'CALCULATE TOTAL DOSE FOR WEIGHT',
-          style: Theme.of(context).textTheme.titleMedium,
+        title: CustomTextWidget(
+          text: 'TOTAL DOSE IN MG & MLS',
         ),
         centerTitle: true,
         elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 16),
-            const Text(
-              "Enter patient's weight, the recommended dose per weight, and the drug's concentration per ml",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomInfoTextWidget(
+                text: "Enter patient's weight, "
+                    "the recommended dose per weight, and the drug's "
+                    "concentration per ml",
               ),
-              textAlign: TextAlign.start,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(context, weightController, 'Enter Weight (kg)'),
-            const SizedBox(height: 24),
-            _buildTextField(context, dosageController, 'Enter Dosage (mg)'),
-            const SizedBox(height: 24),
-            _buildTextField(
-                context, concentrationController, 'Concentration (mg/ml)'),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _calculateDosage, // Calculation triggered only here
-              child: const Text('Calculate Dosage'),
-            ),
-            const SizedBox(height: 24),
-            if (totalDosageResult.isNotEmpty)
-            _buildResultContainer(context, totalDosageResult, 'Total Dosage: '),
-            const SizedBox(height: 16),
-            if (dosageInMlResult.isNotEmpty)
-            _buildResultContainer(context, dosageInMlResult, 'Total Dosage in mls: '),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Method to build text fields
-  Container _buildTextField(
-      BuildContext context,
-      TextEditingController controller,
-      String label
-      ) {
-    return Container(
-      height: 60.0,
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.black54
-            : Colors.grey[50],
-        borderRadius: BorderRadius.circular(24.0),
-        border: Border.all(
-          color: Colors.deepPurple,
-          width: 2.0,
-        ),
-      ),
-      child: Center(
-        child: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText: label,
-            labelStyle: Theme.of(context).textTheme.labelMedium,
-            border: InputBorder.none,
+              const SizedBox(height: 20),
+              CustomTextField(
+                  controller: weightController,
+                  label: 'Enter Weight (kg)'
+              ),
+              const SizedBox(height: 20),
+              CustomTextField(
+                  controller: dosageController,
+                  label: 'Enter Dosage (mg)'
+              ),
+              const SizedBox(height: 20),
+              CustomTextField(
+                  controller: concentrationController,
+                  label: 'Concentration (mg/ml)'
+              ),
+              const SizedBox(height: 20),
+              CustomElevatedButton(
+                onPressed: _calculateDosage,
+                text: 'Calculate Dosage',
+              ),
+              const SizedBox(height: 20),
+              // Use the ResultContainer widget for total dosage result
+              if (totalDosageResult.isNotEmpty)
+                ResultContainer(
+                  label: "Total Dosage in mg:",
+                  result: totalDosageResult,
+                ),
+              const SizedBox(height: 20),
+              // Use the ResultContainer widget for dosage in ml result
+              if (dosageInMlResult.isNotEmpty)
+                ResultContainer(
+                  label: "Total Dosage in ml:",
+                  result: dosageInMlResult,
+                ),
+            ],
           ),
-          style: Theme.of(context).textTheme.headlineMedium,
         ),
-      ),
-    );
-  }
-
-  // Method to build result display
-  Center _buildResultContainer(BuildContext context, String result, String label) {
-    return Center(
-      child: Text(
-        result.isEmpty ? "$label will appear here." : "$label $result",
-        style: Theme.of(context).textTheme.headlineMedium,
       ),
     );
   }

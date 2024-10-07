@@ -55,7 +55,7 @@ class ThemeProvider with ChangeNotifier {
         ),
         headlineLarge: TextStyle(
             color:Colors.lightBlueAccent[400],
-            fontSize: 24,
+            fontSize: 16,
             fontFamily: "assets/fonts/Merriweather-Bold.ttf",
             fontWeight: FontWeight.bold
         ),
@@ -146,8 +146,8 @@ class ThemeProvider with ChangeNotifier {
           fontFamily: "assets/fonts/Merriweather-BlackItalic.ttf",
         ),
         headlineLarge: TextStyle(
-          color:Colors.black87,
-          fontSize: 24,
+          color:Colors.deepPurple,
+          fontSize: 16,
           fontFamily: "assets/fonts/Merriweather-Bold.ttf",
           fontWeight: FontWeight.bold
         ),
