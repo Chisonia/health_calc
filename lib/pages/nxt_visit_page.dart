@@ -7,24 +7,19 @@ import '../widget_box/calculatePageTitle.dart';
 import '../widget_box/customDropdrown.dart';
 import '../widget_box/infoText.dart';
 import '../widget_box/resultContainer.dart';
-import '../widget_box/customTextField.dart'; // Import your custom widget
-
-// Global variable to hold the latest appointment date summary
-String recentAppointmentDate = '';
+import '../widget_box/customTextField.dart';
 
 class NextVisitPage extends StatefulWidget {
-  const NextVisitPage({super.key, required String selectedInterval, required Null Function(String? value) onIntervalChanged});
+  const NextVisitPage({Key? key}) : super(key: key);
 
   @override
   NextVisitPageState createState() => NextVisitPageState();
 }
 
 class NextVisitPageState extends State<NextVisitPage> {
-  String selectedType = ''; // Interval type (days, weeks, etc.)
+  String? selectedType; // Interval type (days, weeks, etc.)
   String appointmentDate = ''; // Default text for calculated date
-  String inputValue = ''; // User input for number of intervals
   List<Map<String, dynamic>> calculationHistory = []; // Calculation history
-  // Controller for input field
   final TextEditingController _inputController = TextEditingController();
 
   @override
@@ -33,13 +28,20 @@ class NextVisitPageState extends State<NextVisitPage> {
     _loadHistory();
   }
 
+  @override
+  void dispose() {
+    _inputController.dispose();
+    super.dispose();
+  }
+
   // Load history from shared preferences
   Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final String? encodedData = prefs.getString('calculationHistory');
     if (encodedData != null) {
       setState(() {
-        calculationHistory = List<Map<String, dynamic>>.from(jsonDecode(encodedData));
+        calculationHistory =
+        List<Map<String, dynamic>>.from(jsonDecode(encodedData));
       });
     }
   }
@@ -53,7 +55,12 @@ class NextVisitPageState extends State<NextVisitPage> {
 
   // Calculate the next appointment date based on the selected type and input value
   void _calculateAppointmentDate() {
-    if (_inputController.text.isEmpty || selectedType.isEmpty) return;
+    if (_inputController.text.isEmpty || selectedType == null) {
+      setState(() {
+        appointmentDate = "Please select interval type and enter duration.";
+      });
+      return;
+    }
 
     int value = int.tryParse(_inputController.text) ?? 0;
     Duration duration;
@@ -72,19 +79,20 @@ class NextVisitPageState extends State<NextVisitPage> {
         duration = Duration(days: value * 365);
         break;
       default:
-        duration = Duration(days: 0);
+        duration = const Duration(days: 0);
     }
 
     DateTime nextAppointment = DateTime.now().add(duration);
     setState(() {
       appointmentDate = DateFormat('EEEE, MMMM d, yyyy').format(nextAppointment);
-      recentAppointmentDate = appointmentDate;
 
       // Add the new appointment calculation to the history
       Map<String, dynamic> calculation = {
         'type': 'Next Visit Calculation',
         'result': appointmentDate,
         'time': DateTime.now().toString(),
+        'intervalType': selectedType,
+        'intervalValue': value,
       };
 
       calculationHistory.add(calculation);
@@ -96,7 +104,7 @@ class NextVisitPageState extends State<NextVisitPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: CustomTextWidget(
+        title: const CustomTextWidget(
           text: 'NEXT VISIT DATE',
         ),
         centerTitle: true,
@@ -108,27 +116,26 @@ class NextVisitPageState extends State<NextVisitPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              CustomInfoTextWidget(
+              const CustomInfoTextWidget(
                 text: "Select the interval type and enter the duration",
               ),
               const SizedBox(height: 20),
-
               CustomDropdown(
-                value: selectedType.isEmpty ? null : selectedType,
+                value: selectedType,
                 hint: "Select interval type",
-                items: <String>['Days', 'Weeks', 'Months', 'Years'],
+                items: const <String>['Days', 'Weeks', 'Months', 'Years'],
                 onChanged: (String? value) {
                   setState(() {
-                    selectedType = value!;
+                    selectedType = value;
                   });
                 },
               ),
               const SizedBox(height: 20),
-              if (selectedType.isNotEmpty)
+              if (selectedType != null)
                 CustomTextField(
                   label: "Enter number of $selectedType",
-                  controller: _inputController, // Use the controller here
-                  textAlign: TextAlign.start, // Optional alignment
+                  controller: _inputController,
+                  textAlign: TextAlign.start,
                 ),
               const SizedBox(height: 20),
               CustomElevatedButton(

@@ -1,52 +1,54 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:health_calc/pages/wfa_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../widget_box/cal_button.dart';// Import calculation button widget
-import 'bmi_page.dart';// Import BMICalculationPage for BMI calculation
-import 'dose_weight_page.dart';// Import DosePerWeightPage for weight for age calculation
-import 'drops_minute_page.dart';// Import DropsPerMinutePage for drops calculation
-import 'ga_edd_page.dart'; // Import GestationalAgePage for GA/EDD calculation
-import 'nxt_visit_page.dart';// Import NextVisitPage for next visit calculation
-import 'history_page.dart'; // Import HistoryPage for calculation history
-import 'profile_page.dart'; // Import ProfilePage for user profile
+import 'dart:convert';
+import 'package:health_calc/pages/profile_page.dart';
+import '../widget_box/cal_button.dart';
+import 'history_page.dart';
 
-// HomePage Widget: StatefulWidget that displays different pages based on user interaction
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.calculationHistory});
-
-  // Holds the calculation history passed to this page
-  final List<Map<String, dynamic>> calculationHistory;
+  const HomePage({Key? key, required List calculationHistory}) : super(key: key);
 
   @override
   HomePageState createState() => HomePageState();
 }
 
-// HomePageState: Manages the state and UI logic for HomePage
 class HomePageState extends State<HomePage> {
-  int _selectedIndex = 0; // Tracks the currently selected bottom navigation index
-  List<Map<String, dynamic>> calculationHistory = []; // Stores the calculation history
+  int _selectedIndex = 0;
+  List<Map<String, dynamic>> _calculationHistory = [];
+  final String _historyKey = 'calculationHistory';
 
   @override
   void initState() {
     super.initState();
-    _loadHistory(); // Load stored calculation history when the widget is initialized
+    _loadHistory(); // Load history from SharedPreferences
   }
 
-  // Load calculation history from SharedPreferences
   Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? encodedData = prefs.getString('calculationHistory');
+    final String? historyJson = prefs.getString(_historyKey);
 
-    // If there is saved history, decode and load it; otherwise, use the passed-in history
-    setState(() {
-      calculationHistory = encodedData != null
-          ? List<Map<String, dynamic>>.from(jsonDecode(encodedData))
-          : widget.calculationHistory;
-    });
+    if (historyJson != null) {
+      setState(() {
+        _calculationHistory =
+        List<Map<String, dynamic>>.from(jsonDecode(historyJson));
+      });
+    }
   }
 
-  // Handle bottom navigation bar item tap to change the page
+  Future<void> _saveHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('calculationHistory', json.encode(_calculationHistory));
+  }
+
+  void _addCalculation(Map<String, String> result) {
+    setState(() async {
+      _calculationHistory.add(result);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('calculationHistory', jsonEncode(_calculationHistory));
+    });
+    _saveHistory(); // Save history after update
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -55,169 +57,82 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Get the appropriate body based on the selected index
-    Widget getBody() {
-      switch (_selectedIndex) {
-        case 0:
-          return _buildHomeBody(); // Home page body
-        case 1:
-          return HistoryPage(calculationHistory: calculationHistory); // History page
-        case 2:
-          return const ProfilePage(); // Profile page
-        default:
-          return Container(); // Fallback to an empty container
-      }
-    }
+    final List<Widget> pages = [
+      _buildHomeContent(),
+      HistoryPage(calculationHistory: _calculationHistory),
+      const ProfilePage(),
+    ];
+    double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         title: Row(
           children: [
-            Image.asset('assets/icons/health_calc_logo.png'), // App logo
+            Image.asset('assets/icons/health_calc_logo.png', width: screenWidth * 0.15),
           ],
         ),
       ),
-      body: getBody(), // Set body based on the selected page
+      body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        unselectedLabelStyle: Theme.of(context).textTheme.titleSmall,
-        selectedLabelStyle: Theme.of(context).textTheme.labelSmall,
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home', // Home tab
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History', // History tab
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile', // Profile tab
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
-        currentIndex: _selectedIndex, // Highlight the current tab
-        onTap: _onItemTapped, // Handle navigation item tap
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/predict-diabetes');
+        },
+        child: Image.asset("assets/icons/diabetes.png", width: screenWidth * 0.15),
       ),
     );
   }
 
-  // Home page body: displays buttons for different calculations and recent calculation history
-  Widget _buildHomeBody() {
+  Widget _buildHomeContent() {
+    double screenWidth = MediaQuery.of(context).size.width;
+    int crossAxisCount = screenWidth > 600 ? 4 : 3;
+
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(screenWidth * 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'WELCOME',
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: screenWidth * 0.05),
             ),
             const SizedBox(height: 16),
             Text(
               'Click On The Icons Below To Quickly Perform Your Desired Calculation.',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: screenWidth * 0.04),
+            ),
+            const SizedBox(height: 16),
+            GridView.count(
+              crossAxisCount: crossAxisCount,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              children: [
+                _buildCalculationButton("BMI", "assets/icons/bmi.png", '/bmi'),
+                _buildCalculationButton("WFA", "assets/icons/child.png", '/wfa'),
+                _buildCalculationButton("GA/EDD", "assets/icons/pregnant.png", '/ga-edd'),
+                _buildCalculationButton("Next Visit", "assets/icons/calendar.png", '/next-visit'),
+                _buildCalculationButton("Dose/Weight", "assets/icons/syringe.png", '/dose-weight'),
+                _buildCalculationButton("Drops/Minute", "assets/icons/drip.png", '/drops-minute'),
+              ],
             ),
             const SizedBox(height: 24),
-            // Grid of calculation buttons
-            SizedBox(
-              height: 240, // Fixed height for the grid
-              child: GridView.count(
-                crossAxisCount: 3, // 3 columns in the grid
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                children: [
-                  buildCalculationButton(
-                    'Weight 4 Age',
-                    'assets/icons/child.png',
-                        () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => WeightForAgePage(
-                            selectedAgeFormat: '',
-                            onAgeFormatChanged: (String? value) {},
-                            age: '',
-                            onAgeChanged: (String value) {},
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  buildCalculationButton(
-                    'GA/EDD',
-                    'assets/icons/pregnant.png',
-                        () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const GestationalAgePage(),
-                        ),
-                      );
-                    },
-                  ),
-                  buildCalculationButton(
-                    'Next Visit',
-                    'assets/icons/calendar.png',
-                        () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NextVisitPage(
-                            selectedInterval: '',
-                            onIntervalChanged: (String? value) {},
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  buildCalculationButton(
-                    'BMI',
-                    'assets/icons/bmi.png',
-                        () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const BMICalculationPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  buildCalculationButton(
-                    'Dose/Weight',
-                    'assets/icons/syringe.png',
-                        () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DosePerWeightPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  buildCalculationButton(
-                    'Drops/Minute',
-                    'assets/icons/drip.png',
-                        () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DropsPerMinutePage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16), // Add spacing before recent calculations text
             Text(
               'RECENT CALCULATIONS',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: screenWidth * 0.05),
             ),
-            // Display recent calculations
-            calculationHistory.isEmpty
+            _calculationHistory.isEmpty
                 ? SizedBox(
               height: 240,
               child: Center(
@@ -228,31 +143,18 @@ class HomePageState extends State<HomePage> {
               ),
             )
                 : ListView.builder(
-              shrinkWrap: true, // ListView inside SingleChildScrollView
-              physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ListView
-              itemCount: calculationHistory.length < 4
-                  ? calculationHistory.length
-                  : 4, // Show the last 4 entries
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _calculationHistory.length < 4 ? _calculationHistory.length : 4,
               itemBuilder: (context, index) {
-                final entry = calculationHistory[
-                calculationHistory.length - 1 - index]; // Latest entry first
-                String iconPath = getIconPath(entry['type']); // Get appropriate icon
+                final entry = _calculationHistory[_calculationHistory.length - 1 - index];
+                String iconPath = getIconPath(entry['type']!);
                 return ListTile(
-                  leading: SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: Image.asset(iconPath), // Display icon based on type
-                  ),
-                  title: Text(
-                    entry['type'], // Display calculation type
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    entry['result'], // Display result
-                    style: const TextStyle(fontSize: 12),
-                  ),
+                  leading: Image.asset(iconPath, width: 24, height: 24),
+                  title: Text(entry['type']!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  subtitle: Text(entry['result']!, style: const TextStyle(fontSize: 12)),
                   trailing: Text(
-                    DateTime.parse(entry['time']).toLocal().toString().split('.')[0], // Format time
+                    DateTime.parse(entry['time']!).toLocal().toString().split('.')[0],
                     style: const TextStyle(fontStyle: FontStyle.italic),
                   ),
                 );
@@ -264,7 +166,19 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  // Get icon path based on calculation type
+  Widget _buildCalculationButton(String title, String assetIconPath, String routeName) {
+    return CustomCalculationButton(
+      title: title,
+      assetIconPath: assetIconPath,
+      onPressed: () async {
+        final result = await Navigator.pushNamed(context, routeName);
+        if (result != null && result is Map<String, String>) {
+          _addCalculation(result);
+        }
+      },
+    );
+  }
+
   String getIconPath(String calculationType) {
     switch (calculationType) {
       case 'BMI Calculation':
@@ -280,7 +194,7 @@ class HomePageState extends State<HomePage> {
       case 'Dosage Calculation':
         return 'assets/icons/syringe.png';
       default:
-        return 'assets/icons/health_calc_logo.png'; // Fallback icon for unknown types
+        return 'assets/icons/health_calc_logo.png';
     }
   }
 }

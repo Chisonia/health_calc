@@ -5,7 +5,8 @@ import 'dart:convert';
 import '../widget_box/calculatePageTitle.dart';
 
 class HistoryPage extends StatefulWidget {
-  const HistoryPage({super.key, required this.calculationHistory});
+  const HistoryPage({Key? key, required this.calculationHistory})
+      : super(key: key);
 
   final List<Map<String, dynamic>> calculationHistory;
 
@@ -14,94 +15,42 @@ class HistoryPage extends StatefulWidget {
 }
 
 class HistoryPageState extends State<HistoryPage> {
-  List<Map<String, dynamic>> calculationHistory = [];
+  List<Map<String, dynamic>> _calculationHistory = [];
+  final String _historyKey = 'calculationHistory';
 
   @override
   void initState() {
     super.initState();
-    _loadHistory();  // Load history on initialization
+    _loadHistory();
   }
 
   // Load history from shared preferences
   Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? encodedData = prefs.getString('calculationHistory');
+    final String? encodedData = prefs.getString(_historyKey);
+
     if (encodedData != null) {
       setState(() {
-        calculationHistory = List<Map<String, dynamic>>.from(jsonDecode(encodedData));
+        _calculationHistory =
+        List<Map<String, dynamic>>.from(jsonDecode(encodedData));
       });
     } else {
       // If no history in SharedPreferences, use the passed-in calculationHistory
-      calculationHistory = widget.calculationHistory;
+      _calculationHistory = widget.calculationHistory;
     }
   }
 
   // Clear the history from shared preferences and update the UI
   Future<void> _clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('calculationHistory');
+    await prefs.remove(_historyKey);
     setState(() {
-      calculationHistory = []; // Update the UI by clearing the list
+      _calculationHistory = [];
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: CustomTextWidget(
-          text: 'CALCULATION HISTORY',
-        ),
-        actions: [
-          TextButton(
-            onPressed: _clearHistory,
-            child: Text(
-              'Clear History',
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-          ),
-        ],
-      ),
-      body: calculationHistory.isNotEmpty
-          ? ListView.builder(
-        itemCount: calculationHistory.length,
-        itemBuilder: (context, index) {
-          final calculation = calculationHistory[index];
-
-          // Determine the icon based on the calculation type
-          String iconPath = getIconPath(calculation['type']);
-
-          return ListTile(
-            leading: SizedBox(
-              width: 24,  // Set desired width
-              height: 24, // Set desired height
-              child: Image.asset(iconPath), // Use the determined icon
-            ),
-            title: Text(
-                calculation['type'],
-          style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            subtitle: Text(calculation['result']),
-            trailing: Text(
-              // Formatting the time for better display
-              DateTime.parse(calculation['time']).toLocal().toString().split('.')[0],
-              style: const TextStyle(
-                  fontStyle: FontStyle.italic
-              ),
-            ),
-          );
-        },
-      )
-          : Center(
-        child: Text(
-          'No history available',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ),
-    );
-  }
-
-  String getIconPath(String calculationType) {
+  // Get the icon path based on calculation type
+  String _getIconPath(String calculationType) {
     switch (calculationType) {
       case 'BMI Calculation':
         return "assets/icons/bmi.png";
@@ -118,5 +67,81 @@ class HistoryPageState extends State<HistoryPage> {
       default:
         return 'assets/icons/health_calc_logo.png'; // Fallback icon
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600; // Adjust for smaller devices
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const CustomTextWidget(
+          text: 'CALCULATION HISTORY',
+        ),
+        actions: [
+          TextButton(
+            onPressed: _clearHistory,
+            child: Text(
+              'Clear History',
+              style: Theme.of(context).textTheme.displaySmall,
+            ),
+          ),
+        ],
+      ),
+      body: _calculationHistory.isNotEmpty
+          ? ListView.builder(
+        itemCount: _calculationHistory.length,
+        itemBuilder: (context, index) {
+          final calculation = _calculationHistory[index];
+          final iconPath = _getIconPath(calculation['type']);
+          final formattedTime = DateTime.parse(calculation['time'])
+              .toLocal()
+              .toString()
+              .split('.')[0];
+
+          return Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen ? 8.0 : 16.0, vertical: 4.0),
+            child: ListTile(
+              leading: SizedBox(
+                width: isSmallScreen ? 20 : 32,
+                height: isSmallScreen ? 20 : 32,
+                child: Image.asset(iconPath),
+              ),
+              title: Text(
+                calculation['type'],
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontSize: isSmallScreen ? 16 : 20,
+                ),
+              ),
+              subtitle: Text(
+                calculation['result'],
+                style: TextStyle(fontSize: isSmallScreen ? 12 : 16),
+              ),
+              trailing: Text(
+                formattedTime,
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  fontSize: isSmallScreen ? 12 : 14,
+                ),
+              ),
+            ),
+          );
+        },
+      )
+          : Center(
+        child: Padding(
+          padding: EdgeInsets.all(isSmallScreen ? 16.0 : 32.0),
+          child: Text(
+            'No history available',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontSize: isSmallScreen ? 14 : 18,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
   }
 }

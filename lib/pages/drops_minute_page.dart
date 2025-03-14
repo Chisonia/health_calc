@@ -11,7 +11,7 @@ import '../widget_box/infoText.dart';
 import '../widget_box/resultContainer.dart';
 
 class DropsPerMinutePage extends StatefulWidget {
-  const DropsPerMinutePage({super.key});
+  const DropsPerMinutePage({Key? key}) : super(key: key);
 
   @override
   DropsPerMinutePageState createState() => DropsPerMinutePageState();
@@ -20,7 +20,7 @@ class DropsPerMinutePage extends StatefulWidget {
 class DropsPerMinutePageState extends State<DropsPerMinutePage> {
   final TextEditingController volumeController = TextEditingController();
   final TextEditingController durationController = TextEditingController();
-  String selectedDropFactor = '';
+  String? selectedDropFactor;
   String dropsPerMinuteResult = '';
   String dropsPer15SecondsResult = '';
   List<Map<String, dynamic>> calculationHistory = [];
@@ -31,12 +31,20 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
     _loadHistory();
   }
 
+  @override
+  void dispose() {
+    volumeController.dispose();
+    durationController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final String? encodedData = prefs.getString('calculationHistory');
     if (encodedData != null) {
       setState(() {
-        calculationHistory = List<Map<String, dynamic>>.from(jsonDecode(encodedData));
+        calculationHistory =
+        List<Map<String, dynamic>>.from(jsonDecode(encodedData));
       });
     }
   }
@@ -48,40 +56,56 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
   }
 
   void _calculateDropsPerMinute() {
-    if (volumeController.text.isNotEmpty &&
-        durationController.text.isNotEmpty &&
-        selectedDropFactor.isNotEmpty) {
-      try {
-        final double dropFactor = double.parse(selectedDropFactor);
-        final double volume = double.parse(volumeController.text);
-        final double durationInHours = double.parse(durationController.text);
-        final double durationInMinutes = durationInHours * 60.0;
-
-        final double dropsPerMinute = (volume * dropFactor) / durationInMinutes;
-        final double dropsPer15Seconds = dropsPerMinute / 4;
-
-        setState(() {
-          dropsPerMinuteResult = dropsPerMinute.toStringAsFixed(0);
-          dropsPer15SecondsResult = dropsPer15Seconds.toStringAsFixed(0);
-          _addCalculationToHistory(dropsPerMinuteResult);
-        });
-      } catch (e) {
-        setState(() {
-          dropsPerMinuteResult = "Error in calculation. Check inputs.";
-        });
-      }
-    } else {
+    if (volumeController.text.isEmpty ||
+        durationController.text.isEmpty ||
+        selectedDropFactor == null) {
       setState(() {
         dropsPerMinuteResult = "Please fill all fields.";
+        dropsPer15SecondsResult = "";
+      });
+      return;
+    }
+
+    try {
+      final double dropFactor = double.parse(selectedDropFactor!);
+      final double volume = double.parse(volumeController.text);
+      final double durationInHours = double.parse(durationController.text);
+      final double durationInMinutes = durationInHours * 60.0;
+
+      final double dropsPerMinute = (volume * dropFactor) / durationInMinutes;
+      final double dropsPer15Seconds = dropsPerMinute / 4;
+
+      setState(() {
+        dropsPerMinuteResult = dropsPerMinute.toStringAsFixed(0);
+        dropsPer15SecondsResult = dropsPer15Seconds.toStringAsFixed(0);
+        _addCalculationToHistory(
+            dropsPerMinute.toStringAsFixed(0),
+            dropsPer15Seconds.toStringAsFixed(0),
+            volume,
+            durationInHours,
+            dropFactor);
+      });
+    } catch (e) {
+      setState(() {
+        dropsPerMinuteResult = "Error in calculation. Check inputs.";
+        dropsPer15SecondsResult = "";
       });
     }
   }
 
-  void _addCalculationToHistory(String dropsPerMinute) {
+  void _addCalculationToHistory(
+      String dropsPerMinute,
+      String dropsPer15Seconds,
+      double volume,
+      double durationInHours,
+      double dropFactor) {
     Map<String, dynamic> calculation = {
       'type': 'Drops Per Minute Calculation',
-      'result': 'Drops/Min: $dropsPerMinute',
+      'result': 'Drops/Min: $dropsPerMinute, Drop(s)/15 Seconds: $dropsPer15Seconds',
       'time': DateTime.now().toString(),
+      'volume': volume,
+      'duration': durationInHours,
+      'dropFactor': dropFactor,
     };
     calculationHistory.add(calculation);
     _saveAllCalculations();
@@ -89,11 +113,11 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<ThemeProvider>(context); // Ensure theme provider is accessed
+    Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: CustomTextWidget(
+        title: const CustomTextWidget(
           text: 'FLUID DROPS/MINUTE',
         ),
         centerTitle: true,
@@ -105,53 +129,43 @@ class DropsPerMinutePageState extends State<DropsPerMinutePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              CustomInfoTextWidget(
-                text:"Select the drop factor and enter "
-                    "the volume and duration:"
+              const CustomInfoTextWidget(
+                text: "Select the drop factor and enter "
+                    "the volume and duration:",
               ),
               const SizedBox(height: 20),
-              // Custom Dropdown for drop factor
               CustomDropdown(
-                value: selectedDropFactor.isEmpty ? null : selectedDropFactor,
+                value: selectedDropFactor,
                 hint: "Select Drop Factor",
-                items: <String>['10', '15', '20', '60'],
+                items: const <String>['10', '15', '20', '60'],
                 onChanged: (String? newValue) {
                   setState(() {
-                    selectedDropFactor = newValue!;
+                    selectedDropFactor = newValue;
                   });
                 },
               ),
               const SizedBox(height: 20),
-
-              // Custom TextField for Volume (ml)
               CustomTextField(
                 label: "Enter Volume (ml)",
                 controller: volumeController,
               ),
               const SizedBox(height: 20),
-
-              // Custom TextField for Duration (hours)
               CustomTextField(
                 label: "Enter Duration (hours)",
                 controller: durationController,
               ),
-
               const SizedBox(height: 20),
               CustomElevatedButton(
                 onPressed: _calculateDropsPerMinute,
                 text: 'Calculate Drops/Min',
               ),
               const SizedBox(height: 20),
-
-              // Display Drops Per Minute result
               if (dropsPerMinuteResult.isNotEmpty)
                 ResultContainer(
                   label: "Drops/Minute:",
                   result: dropsPerMinuteResult,
                 ),
               const SizedBox(height: 20),
-
-              // Display Drops Per 15 Seconds result
               if (dropsPer15SecondsResult.isNotEmpty)
                 ResultContainer(
                   label: "Drop(s)/15 Seconds:",

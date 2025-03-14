@@ -1,0 +1,2 @@
+C:/Users/user/StudioProjects/health_calc/android/app/.cxx/RelWithDebInfo/6k5i1m2z/x86/CMakeFiles/edit_cache.dir
+C:/Users/user/StudioProjects/health_calc/android/app/.cxx/RelWithDebInfo/6k5i1m2z/x86/CMakeFiles/rebuild_cache.dir

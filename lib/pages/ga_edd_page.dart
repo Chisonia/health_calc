@@ -9,45 +9,59 @@ import '../widget_box/infoText.dart';
 import '../widget_box/resultContainer.dart';
 
 class GestationalAgePage extends StatefulWidget {
-  const GestationalAgePage({super.key});
+  const GestationalAgePage({Key? key}) : super(key: key);
 
   @override
   GestationalAgePageState createState() => GestationalAgePageState();
 }
 
 class GestationalAgePageState extends State<GestationalAgePage> {
-  String selectedOption = '';
-  String selectedDate = '';
-  String gestationalAge = '';
-  String expectedDeliveryDate = '';
+  // State variables
+  String? _selectedCalculationFormat; // 'Weeks' or 'Months'
+  String? _selectedLastMenstrualPeriodDate;
+  String _calculatedGestationalAge = '';
+  String _calculatedExpectedDeliveryDate = '';
 
-  final TextEditingController dateController = TextEditingController();
-  List<Map<String, dynamic>> calculationHistory = [];
+  // Controllers for text fields
+  final TextEditingController _lastMenstrualPeriodDateController =
+  TextEditingController();
+
+  // History of calculations
+  List<Map<String, dynamic>> _calculationHistory = [];
+  final String _historyKey = 'calculationHistory';
 
   @override
   void initState() {
     super.initState();
-    _loadHistory(); // Load previous calculations from SharedPreferences
+    _loadCalculationHistory();
   }
 
-  // Load history from SharedPreferences
-  Future<void> _loadHistory() async {
+  @override
+  void dispose() {
+    _lastMenstrualPeriodDateController.dispose();
+    super.dispose();
+  }
+
+  // Load calculation history from SharedPreferences
+  Future<void> _loadCalculationHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? encodedData = prefs.getString('calculationHistory');
+    final String? encodedData = prefs.getString(_historyKey);
     if (encodedData != null) {
       setState(() {
-        calculationHistory = List<Map<String, dynamic>>.from(jsonDecode(encodedData));
+        _calculationHistory =
+        List<Map<String, dynamic>>.from(jsonDecode(encodedData));
       });
     }
   }
 
-  // Save all calculations to SharedPreferences
-  Future<void> _saveAllCalculations() async {
+  // Save calculation history to SharedPreferences
+  Future<void> _saveCalculationHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final String encodedData = jsonEncode(calculationHistory);
-    await prefs.setString('calculationHistory', encodedData);
+    final String encodedData = jsonEncode(_calculationHistory);
+    await prefs.setString(_historyKey, encodedData);
   }
 
+  // Select date using date picker
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -57,58 +71,69 @@ class GestationalAgePageState extends State<GestationalAgePage> {
     );
     if (picked != null) {
       setState(() {
-        selectedDate = picked.toLocal().toString().split(' ')[0];
-        dateController.text = selectedDate;
+        _selectedLastMenstrualPeriodDate =
+        picked.toLocal().toString().split(' ')[0];
+        _lastMenstrualPeriodDateController.text =
+        _selectedLastMenstrualPeriodDate!;
       });
     }
   }
 
-  void _calculateGestationalAgeAndEDD() {
-    if (selectedDate.isNotEmpty && selectedOption.isNotEmpty) {
-      DateTime date = DateTime.parse(selectedDate);
-      DateTime now = DateTime.now();
-
-      int daysDifference = now.difference(date).inDays;
-
-      if (selectedOption == 'Weeks') {
-        int weeks = (daysDifference ~/ 7);
-        int days = daysDifference % 7;
-        setState(() {
-          gestationalAge = "$weeks weeks and $days days";
-          expectedDeliveryDate = date.add(const Duration(days: 280)).toString().split(' ')[0];
-        });
-      } else if (selectedOption == 'Months') {
-        int months = daysDifference ~/ 30;
-        int days = daysDifference % 30;
-        setState(() {
-          gestationalAge = "$months months and $days days";
-          expectedDeliveryDate = date.add(const Duration(days: 280)).toString().split(' ')[0];
-        });
-      }
-
-      // Save the result to history
-      Map<String, dynamic> calculation = {
-        'type': 'Gestational Age Calculation',
-        'result': 'GA: $gestationalAge, EDD: $expectedDeliveryDate',
-        'time': DateTime.now().toString(),
-      };
-
-      calculationHistory.add(calculation);
-      _saveAllCalculations();  // Save history
+  // Calculate GA and EDD based on last menstrual period
+  void _calculateGAAndEDDFromLMP() {
+    if (_selectedLastMenstrualPeriodDate == null ||
+        _selectedCalculationFormat == null) {
+      _showError("Please select a date and format.");
+      return;
     }
+
+    final lmpDate = DateTime.parse(_selectedLastMenstrualPeriodDate!);
+    final now = DateTime.now();
+    final daysDifference = now.difference(lmpDate).inDays;
+
+    if (_selectedCalculationFormat == 'Weeks') {
+      final weeks = daysDifference ~/ 7;
+      final days = daysDifference % 7;
+      setState(() {
+        _calculatedGestationalAge = "$weeks weeks and $days days";
+        _calculatedExpectedDeliveryDate =
+        lmpDate.add(const Duration(days: 280)).toString().split(' ')[0];
+      });
+    } else if (_selectedCalculationFormat == 'Months') {
+      final months = daysDifference ~/ 30;
+      final days = daysDifference % 30;
+      setState(() {
+        _calculatedGestationalAge = "$months months and $days days";
+        _calculatedExpectedDeliveryDate =
+        lmpDate.add(const Duration(days: 280)).toString().split(' ')[0];
+      });
+    }
+    _addToHistory(_calculatedGestationalAge, _calculatedExpectedDeliveryDate);
   }
 
-  @override
-  void dispose() {
-    dateController.dispose();
-    super.dispose();
+  // Add calculation to history
+  void _addToHistory(String ga, String edd) {
+    final calculation = {
+      'type': 'Gestational Age Calculation',
+      'result': 'GA: $ga, EDD: $edd',
+      'time': DateTime.now().toString(),
+    };
+    _calculationHistory.add(calculation);
+    _saveCalculationHistory();
+  }
+
+  // Show error message
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: CustomTextWidget(
+        title: const CustomTextWidget(
           text: 'GESTATIONAL AGE/EDD',
         ),
         centerTitle: true,
@@ -120,17 +145,16 @@ class GestationalAgePageState extends State<GestationalAgePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              CustomInfoTextWidget(
-                  text:'Select "Weeks" or "Months" to Calculate'
-              ),
+              const CustomInfoTextWidget(
+                  text: 'Select "Weeks" or "Months" to Calculate'),
               const SizedBox(height: 20),
               CustomDropdown(
-                value: selectedOption.isEmpty ? null : selectedOption,
+                value: _selectedCalculationFormat,
                 hint: "Select Format",
-                items: <String>['Weeks', 'Months'],
+                items: const <String>['Weeks', 'Months'],
                 onChanged: (String? newValue) {
                   setState(() {
-                    selectedOption = newValue!;
+                    _selectedCalculationFormat = newValue;
                   });
                 },
               ),
@@ -139,27 +163,27 @@ class GestationalAgePageState extends State<GestationalAgePage> {
                 onTap: () => _selectDate(context),
                 child: AbsorbPointer(
                   child: CustomTextField(
-                      controller: dateController,
-                      label: 'Select Date'
+                    controller: _lastMenstrualPeriodDateController,
+                    label: 'Select Date',
                   ),
                 ),
               ),
               const SizedBox(height: 20),
               CustomElevatedButton(
-                onPressed: _calculateGestationalAgeAndEDD,
+                onPressed: _calculateGAAndEDDFromLMP,
                 text: 'Calculate GA and EDD',
               ),
               const SizedBox(height: 20),
-              if (gestationalAge.isNotEmpty)
+              if (_calculatedGestationalAge.isNotEmpty)
                 ResultContainer(
                   label: "Gestational Age:",
-                  result: gestationalAge,
+                  result: _calculatedGestationalAge,
                 ),
               const SizedBox(height: 20),
-              if (expectedDeliveryDate.isNotEmpty)
+              if (_calculatedExpectedDeliveryDate.isNotEmpty)
                 ResultContainer(
                   label: "Expected Delivery Date:",
-                  result: expectedDeliveryDate,
+                  result: _calculatedExpectedDeliveryDate,
                 ),
             ],
           ),

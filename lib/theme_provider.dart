@@ -10,193 +10,212 @@ class ThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  static const String _fontFamily = "Merriweather";
 
   ThemeData get themeData {
-    return _isDarkTheme
-        ? ThemeData.dark().copyWith(
+    return _isDarkTheme ? _darkTheme : _lightTheme;
+  }
+
+  // Dark Theme
+  ThemeData get _darkTheme {
+    final base = ThemeData.dark();
+    return base.copyWith(
       appBarTheme: const AppBarTheme(
         color: Colors.lightBlueAccent,
       ),
       scaffoldBackgroundColor: Colors.grey[900],
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          selectedIconTheme: IconThemeData(color: Colors.lightBlueAccent[400]),
-          unselectedIconTheme: const IconThemeData(color: Colors.grey)
+        selectedIconTheme:
+        IconThemeData(color: Colors.lightBlueAccent[400]),
+        unselectedIconTheme: const IconThemeData(color: Colors.grey),
       ),
-      textTheme: TextTheme(
-        bodyLarge: TextStyle(
-            color: Colors.lightBlueAccent[50],
-            fontSize: 24,
-            fontFamily: "assets/fonts/Merriweather-Regular.ttf",
-        ),
-        bodyMedium: TextStyle(
-            color: Colors.lightBlueAccent[50],
-            fontSize: 16,
-            fontFamily: "assets/fonts/Merriweather-Regular.ttf",
-        ),
-        bodySmall: TextStyle(
-            color: Colors.lightBlueAccent[50],
-            fontSize: 12,
-            fontFamily: "assets/fonts/Merriweather-Regular.ttf",
-        ),
-        displayLarge: TextStyle(
-            color:Colors.lightBlueAccent[100],
-            fontSize: 24,
-            fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-            ),
-        displayMedium: TextStyle(
-          color:Colors.lightBlueAccent[50],
-          fontSize: 16,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-        ),
-        displaySmall: const TextStyle(
-          color:Colors.white,
-          fontSize: 12,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-        ),
-        headlineLarge: TextStyle(
-            color:Colors.lightBlueAccent[400],
-            fontSize: 16,
-            fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-            fontWeight: FontWeight.bold
-        ),
-        headlineMedium: TextStyle(
-          color:Colors.lightBlueAccent[400],
-          fontSize: 16,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-          fontWeight: FontWeight.bold
-        ),
-        headlineSmall: TextStyle(
-          color:Colors.lightBlueAccent[400],
-          fontSize: 12,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-        ),
-        titleLarge: const TextStyle(
-          color:Colors.black87,
-          fontSize: 24,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-        ),
-        titleMedium:const TextStyle(
-          color:Colors.black87,
-          fontSize: 16,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-          fontWeight: FontWeight.bold
-        ),
-        titleSmall: const TextStyle(
-          color:Colors.black87,
-          fontSize: 12,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-        ),
+      textTheme: _buildDarkTextTheme(base.textTheme),
+    );
+  }
 
-        labelLarge: const TextStyle(
-          color:Colors.black54,
-          fontSize: 24,
-          fontFamily: "assets/fonts/Merriweather-Light.ttf",
-        ),
-        labelMedium: TextStyle(
-          color:Colors.lightBlueAccent[400],
-          fontSize: 16,
-          fontFamily: "assets/fonts/Merriweather-Light.ttf",
-        ),
-        labelSmall: const TextStyle(
-          color:Colors.black54,
-          fontSize: 12,
-          fontFamily: "assets/fonts/Merriweather-Light.ttf",
-        ),
-      ),
-    )
-        : ThemeData.light().copyWith(
+  // Light Theme
+  ThemeData get _lightTheme {
+    final base = ThemeData.light();
+    return base.copyWith(
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.grey[50],
       ),
       scaffoldBackgroundColor: Colors.grey[100],
-
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          selectedIconTheme: IconThemeData(color: Colors.deepPurple[800]),
-          unselectedIconTheme: IconThemeData(color: Colors.grey[800]),
+        selectedIconTheme: IconThemeData(color: Colors.deepPurple[800]),
+        unselectedIconTheme: IconThemeData(color: Colors.grey[800]),
       ),
-      textTheme: const TextTheme(
-        bodyLarge: TextStyle(
-          color: Colors.black87,
-          fontSize: 24,
-          fontFamily: "assets/fonts/Merriweather-Regular.ttf",
-        ),
-        bodyMedium: TextStyle(
-          color: Colors.black87,
-          fontSize: 16,
-          fontFamily: "assets/fonts/Merriweather-Regular.ttf",
-        ),
-        bodySmall: TextStyle(
-          color: Colors.black87,
-          fontSize: 12,
-          fontFamily: "assets/fonts/Merriweather-Regular.ttf",
-        ),
-        displayLarge: TextStyle(
-          color:Colors.black87,
-          fontSize: 24,
-          fontFamily: "assets/fonts/Merriweather-BlackItalic.ttf",
-        ),
-        displayMedium: TextStyle(
-          color:Colors.black87,
-          fontSize: 16,
-          fontFamily: "assets/fonts/Merriweather-BlackItalic.ttf",
-        ),
-        displaySmall: TextStyle(
-          color:Colors.deepPurple,
-          fontSize: 12,
-          fontFamily: "assets/fonts/Merriweather-BlackItalic.ttf",
-        ),
-        headlineLarge: TextStyle(
-          color:Colors.deepPurple,
-          fontSize: 16,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-          fontWeight: FontWeight.bold
-        ),
-        headlineMedium: TextStyle(
-          color:Colors.black87,
-          fontSize: 16,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-          fontWeight: FontWeight.bold
-        ),
-        headlineSmall: TextStyle(
-          color:Colors.black87,
-          fontSize: 12,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-        ),
-        titleLarge: TextStyle(
-            color:Colors.black87,
-            fontSize: 24,
-            fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-            fontWeight: FontWeight.bold
-        ),
-        titleMedium: TextStyle(
-            color:Colors.black87,
-            fontSize: 16,
-            fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-            fontWeight: FontWeight.bold
-        ),
-        titleSmall: TextStyle(
-            color:Colors.black87,
-            fontSize: 12,
-            fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-            fontWeight: FontWeight.bold
-        ),
+      textTheme: _buildLightTextTheme(base.textTheme),
+    );
+  }
 
-        labelLarge: TextStyle(
-          color:Colors.black54,
-          fontSize: 24,
-          fontFamily: "assets/fonts/Merriweather-Light.ttf",
-        ),
-        labelMedium: TextStyle(
-          color:Colors.black54,
-          fontSize: 16,
-          fontFamily: "assets/fonts/Merriweather-Light.ttf",
-        ),
-        labelSmall: TextStyle(
-          color:Colors.deepPurple,
-          fontSize: 12,
-          fontFamily: "assets/fonts/Merriweather-Bold.ttf",
-          fontWeight: FontWeight.bold
-        ),
+  // Dark Text Theme
+  TextTheme _buildDarkTextTheme(TextTheme base) {
+    return base.copyWith(
+      bodyLarge: base.bodyLarge?.copyWith(
+        color: Colors.lightBlueAccent[50],
+        fontSize: 24,
+        fontFamily: "$_fontFamily-Regular",
+      ),
+      bodyMedium: base.bodyMedium?.copyWith(
+        color: Colors.lightBlueAccent[50],
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Regular",
+      ),
+      bodySmall: base.bodySmall?.copyWith(
+        color: Colors.lightBlueAccent[50],
+        fontSize: 12,
+        fontFamily: "$_fontFamily-Regular",
+      ),
+      displayLarge: base.displayLarge?.copyWith(
+        color: Colors.lightBlueAccent[100],
+        fontSize: 24,
+        fontFamily: "$_fontFamily-Bold",
+      ),
+      displayMedium: base.displayMedium?.copyWith(
+        color: Colors.lightBlueAccent[50],
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Bold",
+      ),
+      displaySmall: base.displaySmall?.copyWith(
+        color: Colors.white,
+        fontSize: 12,
+        fontFamily: "$_fontFamily-Bold",
+      ),
+      headlineLarge: base.headlineLarge?.copyWith(
+        color: Colors.lightBlueAccent[400],
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Bold",
+        fontWeight: FontWeight.bold,
+      ),
+      headlineMedium: base.headlineMedium?.copyWith(
+        color: Colors.lightBlueAccent[400],
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Bold",
+        fontWeight: FontWeight.bold,
+      ),
+      headlineSmall: base.headlineSmall?.copyWith(
+        color: Colors.lightBlueAccent[400],
+        fontSize: 12,
+        fontFamily: "$_fontFamily-Bold",
+      ),
+      titleLarge: base.titleLarge?.copyWith(
+        color: Colors.black87,
+        fontSize: 24,
+        fontFamily: "$_fontFamily-Bold",
+      ),
+      titleMedium: base.titleMedium?.copyWith(
+        color: Colors.black87,
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Bold",
+        fontWeight: FontWeight.bold,
+      ),
+      titleSmall: base.titleSmall?.copyWith(
+        color: Colors.black87,
+        fontSize: 12,
+        fontFamily: "$_fontFamily-Bold",
+      ),
+      labelLarge: base.labelLarge?.copyWith(
+        color: Colors.black54,
+        fontSize: 24,
+        fontFamily: "$_fontFamily-Light",
+      ),
+      labelMedium: base.labelMedium?.copyWith(
+        color: Colors.lightBlueAccent[400],
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Light",
+      ),
+      labelSmall: base.labelSmall?.copyWith(
+        color: Colors.black54,
+        fontSize: 12,
+        fontFamily: "$_fontFamily-Light",
+      ),
+    );
+  }
+
+  // Light Text Theme
+  TextTheme _buildLightTextTheme(TextTheme base) {
+    return base.copyWith(
+      bodyLarge: base.bodyLarge?.copyWith(
+        color: Colors.black87,
+        fontSize: 24,
+        fontFamily: "$_fontFamily-Regular",
+      ),
+      bodyMedium: base.bodyMedium?.copyWith(
+        color: Colors.black87,
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Regular",
+      ),
+      bodySmall: base.bodySmall?.copyWith(
+        color: Colors.black87,
+        fontSize: 12,
+        fontFamily: "$_fontFamily-Regular",
+      ),
+      displayLarge: base.displayLarge?.copyWith(
+        color: Colors.black87,
+        fontSize: 24,
+        fontFamily: "$_fontFamily-BlackItalic",
+      ),
+      displayMedium: base.displayMedium?.copyWith(
+        color: Colors.black87,
+        fontSize: 16,
+        fontFamily: "$_fontFamily-BlackItalic",
+      ),
+      displaySmall: base.displaySmall?.copyWith(
+        color: Colors.deepPurple,
+        fontSize: 12,
+        fontFamily: "$_fontFamily-BlackItalic",
+      ),
+      headlineLarge: base.headlineLarge?.copyWith(
+        color: Colors.deepPurple,
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Bold",
+        fontWeight: FontWeight.bold,
+      ),
+      headlineMedium: base.headlineMedium?.copyWith(
+        color: Colors.black87,
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Bold",
+        fontWeight: FontWeight.bold,
+      ),
+      headlineSmall: base.headlineSmall?.copyWith(
+        color: Colors.black87,
+        fontSize: 12,
+        fontFamily: "$_fontFamily-Bold",
+      ),
+      titleLarge: base.titleLarge?.copyWith(
+        color: Colors.black87,
+        fontSize: 24,
+        fontFamily: "$_fontFamily-Bold",
+        fontWeight: FontWeight.bold,
+      ),
+      titleMedium: base.titleMedium?.copyWith(
+        color: Colors.black87,
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Bold",
+        fontWeight: FontWeight.bold,
+      ),
+      titleSmall: base.titleSmall?.copyWith(
+        color: Colors.black87,
+        fontSize: 12,
+        fontFamily: "$_fontFamily-Bold",
+        fontWeight: FontWeight.bold,
+      ),
+      labelLarge: base.labelLarge?.copyWith(
+        color: Colors.black54,
+        fontSize: 24,
+        fontFamily: "$_fontFamily-Light",
+      ),
+      labelMedium: base.labelMedium?.copyWith(
+        color: Colors.black54,
+        fontSize: 16,
+        fontFamily: "$_fontFamily-Light",
+      ),
+      labelSmall: base.labelSmall?.copyWith(
+        color: Colors.deepPurple,
+        fontSize: 12,
+        fontFamily: "$_fontFamily-Bold",
+        fontWeight: FontWeight.bold,
       ),
     );
   }

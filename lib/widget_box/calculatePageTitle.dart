@@ -2,19 +2,36 @@ import 'package:flutter/material.dart';
 
 class CustomTextWidget extends StatelessWidget {
   final String text;
-  final TextStyle? style;
+  final TextStyle? textStyle;
+  final TextAlign textAlign;
+  final int? maxLines;
+  final TextOverflow? overflow;
 
   const CustomTextWidget({
     Key? key,
     required this.text,
-    this.style,
+    this.textStyle,
+    this.textAlign = TextAlign.center,
+    this.maxLines,
+    this.overflow,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final double adaptiveFontSize = screenWidth * 0.05; // Adjust font size dynamically
+
+    final defaultTextStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+      fontSize: adaptiveFontSize,
+      fontWeight: FontWeight.bold,
+    );
+
     return Text(
       text,
-      style: style ?? Theme.of(context).textTheme.titleMedium,
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
+      style: textStyle ?? defaultTextStyle,
     );
   }
 }

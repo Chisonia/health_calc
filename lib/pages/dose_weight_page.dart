@@ -8,7 +8,7 @@ import '../widget_box/infoText.dart';
 import '../widget_box/resultContainer.dart';
 
 class DosePerWeightPage extends StatefulWidget {
-  const DosePerWeightPage({super.key});
+  const DosePerWeightPage({Key? key}) : super(key: key);
 
   @override
   DosePerWeightPageState createState() => DosePerWeightPageState();
@@ -21,55 +21,86 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
 
   String totalDosageResult = '';
   String dosageInMlResult = '';
+  List<Map<String, dynamic>> calculationHistory = [];
 
-  // Method to calculate and save dosage, triggered on button press
-  void _calculateDosage() {
-    if (weightController.text.isNotEmpty &&
-        dosageController.text.isNotEmpty &&
-        concentrationController.text.isNotEmpty) {
-      final double weight = double.parse(weightController.text);
-      final double dosage = double.parse(dosageController.text);
-      final double concentration = double.parse(concentrationController.text);
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
 
-      // Calculate total dosage required (mg) and dosage in ml
-      final double totalDosage = dosage * weight;
-      final double dosageInMl = totalDosage / concentration;
+  @override
+  void dispose() {
+    weightController.dispose();
+    dosageController.dispose();
+    concentrationController.dispose();
+    super.dispose();
+  }
 
+  // Load history from shared preferences
+  Future<void> _loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? encodedData = prefs.getString('calculationHistory');
+    if (encodedData != null) {
       setState(() {
-        totalDosageResult = totalDosage.toStringAsFixed(2);
-        dosageInMlResult = dosageInMl.toStringAsFixed(2);
+        calculationHistory =
+        List<Map<String, dynamic>>.from(jsonDecode(encodedData));
       });
-
-      // Save the calculation to history once
-      _saveToHistory(totalDosageResult, dosageInMlResult);
     }
   }
 
-  // Save calculation history to SharedPreferences
-  Future<void> _saveToHistory(String totalDosage, String dosageInMl) async {
+  // Save history to shared preferences
+  Future<void> _saveAllCalculations() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? encodedData = prefs.getString('calculationHistory');
+    final String encodedData = jsonEncode(calculationHistory);
+    await prefs.setString('calculationHistory', encodedData);
+  }
 
-    List<Map<String, dynamic>> history = [];
-    if (encodedData != null) {
-      history = List<Map<String, dynamic>>.from(jsonDecode(encodedData));
+  // Method to calculate and save dosage, triggered on button press
+  void _calculateDosage() {
+    if (weightController.text.isEmpty ||
+        dosageController.text.isEmpty ||
+        concentrationController.text.isEmpty) {
+      setState(() {
+        totalDosageResult = "Please enter all values.";
+        dosageInMlResult = "";
+      });
+      return;
     }
 
-    final newEntry = {
-      'type': 'Dosage Calculation',
-      'result': 'Total Dosage: $totalDosage mg, Dosage: $dosageInMl ml',
-      'time': DateTime.now().toString(),
-    };
+    final double weight = double.parse(weightController.text);
+    final double dosage = double.parse(dosageController.text);
+    final double concentration = double.parse(concentrationController.text);
 
-    history.add(newEntry);
-    await prefs.setString('calculationHistory', jsonEncode(history));
+    // Calculate total dosage required (mg) and dosage in ml
+    final double totalDosage = dosage * weight;
+    final double dosageInMl = totalDosage / concentration;
+
+    setState(() {
+      totalDosageResult = totalDosage.toStringAsFixed(2);
+      dosageInMlResult = dosageInMl.toStringAsFixed(2);
+
+      // Add the new calculation to the history
+      Map<String, dynamic> calculation = {
+        'type': 'Dosage Calculation',
+        'result':
+        'Total Dosage: ${totalDosageResult} mg, Dosage: ${dosageInMlResult} ml',
+        'time': DateTime.now().toString(),
+        'weight': weight,
+        'dosage': dosage,
+        'concentration': concentration,
+      };
+
+      calculationHistory.add(calculation);
+      _saveAllCalculations(); // Save updated history
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: CustomTextWidget(
+        title: const CustomTextWidget(
           text: 'TOTAL DOSE IN MG & MLS',
         ),
         centerTitle: true,
@@ -81,26 +112,21 @@ class DosePerWeightPageState extends State<DosePerWeightPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              CustomInfoTextWidget(
+              const CustomInfoTextWidget(
                 text: "Enter patient's weight, "
                     "the recommended dose per weight, and the drug's "
                     "concentration per ml",
               ),
               const SizedBox(height: 20),
               CustomTextField(
-                  controller: weightController,
-                  label: 'Enter Weight (kg)'
-              ),
+                  controller: weightController, label: 'Enter Weight (kg)'),
               const SizedBox(height: 20),
               CustomTextField(
-                  controller: dosageController,
-                  label: 'Enter Dosage (mg)'
-              ),
+                  controller: dosageController, label: 'Enter Dosage (mg)'),
               const SizedBox(height: 20),
               CustomTextField(
                   controller: concentrationController,
-                  label: 'Concentration (mg/ml)'
-              ),
+                  label: 'Concentration (mg/ml)'),
               const SizedBox(height: 20),
               CustomElevatedButton(
                 onPressed: _calculateDosage,

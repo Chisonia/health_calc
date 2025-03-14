@@ -1,9 +1,7 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../theme_provider.dart';
 import '../widget_box/calculateButton.dart';
 import '../widget_box/calculatePageTitle.dart';
@@ -13,83 +11,97 @@ import '../widget_box/infoText.dart';
 import '../widget_box/resultContainer.dart';
 
 class BMICalculationPage extends StatefulWidget {
-  const BMICalculationPage({super.key});
+  const BMICalculationPage({Key? key}) : super(key: key);
 
   @override
   BMICalculationPageState createState() => BMICalculationPageState();
 }
 
 class BMICalculationPageState extends State<BMICalculationPage> {
-  String selectedUnit = ''; // Default unit
+  String? selectedUnit;
   final TextEditingController heightController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   String bmiResult = '';
   String bmiInterpretation = '';
-
-  List<Map<String, dynamic>> calculationHistory = [
-  ]; // Keep history in the state
+  List<Map<String, dynamic>> calculationHistory = [];
 
   @override
   void initState() {
     super.initState();
-    _loadHistory(); // Load history on initialization
+    _loadHistory();
   }
 
-  // Load history from shared preferences
+  @override
+  void dispose() {
+    heightController.dispose();
+    weightController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final String? encodedData = prefs.getString('calculationHistory');
     if (encodedData != null) {
       setState(() {
-        calculationHistory = List<Map<String, dynamic>>.from(
-            jsonDecode(encodedData));
+        calculationHistory =
+        List<Map<String, dynamic>>.from(jsonDecode(encodedData));
       });
     }
   }
 
-  void _calculateBMI() {
-    if (heightController.text.isNotEmpty && weightController.text.isNotEmpty) {
-      final double height = double.parse(heightController.text);
-      final double weight = double.parse(weightController.text);
-
-      double bmi;
-      String unit;
-
-      if (selectedUnit == 'Metric (kg/m²)') {
-        bmi = weight / (height * height);
-        unit = 'kg/m²';
-      } else {
-        bmi = (weight / (height * height)) * 703;
-        unit = 'lbs/in²';
-      }
-
-      setState(() {
-        bmiResult = bmi.toStringAsFixed(2);
-        bmiInterpretation = _getBMIInterpretation(bmi);
-
-        // Save the calculation to history only after a valid BMI result
-        Map<String, dynamic> calculation = {
-          'type': 'BMI Calculation',
-          'result': 'BMI: $bmiResult $unit ($bmiInterpretation)',
-          'time': DateTime.now().toString(),
-        };
-
-        calculationHistory.add(calculation);
-        _saveAllCalculations(); // Save history after calculation
-      });
-    } else {
-      setState(() {
-        bmiResult = "Please enter valid height and weight.";
-        bmiInterpretation = "";
-      });
-    }
-  }
-
-  // Save all calculations to SharedPreferences
   Future<void> _saveAllCalculations() async {
     final prefs = await SharedPreferences.getInstance();
     final String encodedData = jsonEncode(calculationHistory);
     await prefs.setString('calculationHistory', encodedData);
+  }
+
+  void _calculateBMI() {
+    if (heightController.text.isEmpty ||
+        weightController.text.isEmpty ||
+        selectedUnit == null) {
+      setState(() {
+        bmiResult = "Please select a unit and enter valid height and weight.";
+        bmiInterpretation = "";
+      });
+      return;
+    }
+
+    final double height = double.parse(heightController.text);
+    final double weight = double.parse(weightController.text);
+
+    double bmi;
+    String unit;
+    String heightLabel;
+    String weightLabel;
+
+    if (selectedUnit == 'Metric (kg/m²)') {
+      bmi = weight / (height * height);
+      unit = 'kg/m²';
+      heightLabel = "Enter Height in meter";
+      weightLabel = "Enter Weight in kg";
+    } else {
+      bmi = (weight / (height * height)) * 703;
+      unit = 'lbs/in²';
+      heightLabel = "Enter Height in inches";
+      weightLabel = "Enter Weight in lbs";
+    }
+
+    setState(() {
+      bmiResult = bmi.toStringAsFixed(2);
+      bmiInterpretation = _getBMIInterpretation(bmi);
+
+      Map<String, dynamic> calculation = {
+        'type': 'BMI Calculation',
+        'result': 'BMI: $bmiResult $unit ($bmiInterpretation)',
+        'time': DateTime.now().toString(),
+        'unit': selectedUnit,
+        'height': height,
+        'weight': weight,
+      };
+
+      calculationHistory.add(calculation);
+      _saveAllCalculations();
+    });
   }
 
   String _getBMIInterpretation(double bmi) {
@@ -110,16 +122,19 @@ class BMICalculationPageState extends State<BMICalculationPage> {
   Widget build(BuildContext context) {
     Provider.of<ThemeProvider>(context);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600; // Adjust for smaller devices
+
     return Scaffold(
       appBar: AppBar(
-        title: CustomTextWidget(
+        title: const CustomTextWidget(
           text: 'BODY MASS INDEX',
         ),
         centerTitle: true,
         elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -127,46 +142,51 @@ class BMICalculationPageState extends State<BMICalculationPage> {
               CustomInfoTextWidget(
                 text: "Select the unit and enter the height and "
                     "weight for BMI calculation",
+                fontSize: isSmallScreen ? 14 : 16,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: isSmallScreen ? 10 : 20),
               CustomDropdown(
-                value: selectedUnit.isEmpty ? null : selectedUnit,
+                value: selectedUnit,
                 hint: "Select Format",
-                items: <String>['Metric (kg/m²)', 'Imperial (lbs/in²)'],
+                items: const <String>['Metric (kg/m²)', 'Imperial (lbs/in²)'],
                 onChanged: (String? newValue) {
                   setState(() {
-                    selectedUnit = newValue!;
+                    selectedUnit = newValue;
                   });
                 },
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: isSmallScreen ? 10 : 20),
               CustomTextField(
-                label: "Enter Height",
+                label: selectedUnit == 'Metric (kg/m²)'
+                    ? "Enter Height in meter"
+                    : "Enter Height in inches",
                 controller: heightController,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: isSmallScreen ? 10 : 20),
               CustomTextField(
-                label: "Enter Weight",
+                label: selectedUnit == 'Metric (kg/m²)'
+                    ? "Enter Weight in kg"
+                    : "Enter Weight in lbs",
                 controller: weightController,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: isSmallScreen ? 10 : 20),
               CustomElevatedButton(
                 onPressed: _calculateBMI,
                 text: 'Calculate BMI',
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: isSmallScreen ? 10 : 20),
               if (bmiResult.isNotEmpty)
-
                 ResultContainer(
                   label: "BMI Result:",
                   result: bmiResult,
+                  fontSize: isSmallScreen ? 14 : 18,
                 ),
-
-              const SizedBox(height: 20),
+              SizedBox(height: isSmallScreen ? 10 : 20),
               if (bmiInterpretation.isNotEmpty)
                 ResultContainer(
-                  label: "BMI Result:",
+                  label: "BMI Interpretation:",
                   result: bmiInterpretation,
+                  fontSize: isSmallScreen ? 14 : 18,
                 ),
             ],
           ),

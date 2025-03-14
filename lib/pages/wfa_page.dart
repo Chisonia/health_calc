@@ -10,36 +10,22 @@ import '../widget_box/infoText.dart';
 import '../widget_box/resultContainer.dart';
 
 class WeightForAgePage extends StatefulWidget {
-  final String selectedAgeFormat;
-  final ValueChanged<String?> onAgeFormatChanged;
-  final String age;
-  final ValueChanged<String> onAgeChanged;
-
-  const WeightForAgePage({
-    super.key,
-    required this.selectedAgeFormat,
-    required this.onAgeFormatChanged,
-    required this.age,
-    required this.onAgeChanged,
-  });
+  const WeightForAgePage({Key? key}) : super(key: key);
 
   @override
   WeightForAgePageState createState() => WeightForAgePageState();
 }
 
 class WeightForAgePageState extends State<WeightForAgePage> {
-  late String selectedAgeFormat;
-  late TextEditingController ageController;
+  String? selectedAgeFormat;
+  final TextEditingController ageController = TextEditingController();
   String expectedWeightAge = '';
-  List<Map<String, dynamic>> calculationHistory = []; // Calculation history
+  List<Map<String, dynamic>> calculationHistory = [];
 
   @override
   void initState() {
     super.initState();
-    selectedAgeFormat =
-    widget.selectedAgeFormat.isEmpty ? '' : widget.selectedAgeFormat;
-    ageController = TextEditingController();
-    _loadHistory(); // Load calculation history
+    _loadHistory();
   }
 
   @override
@@ -69,19 +55,21 @@ class WeightForAgePageState extends State<WeightForAgePage> {
 
   void _calculateExpectedWeight() {
     final String ageText = ageController.text;
-    if (ageText.isNotEmpty) {
+    if (ageText.isNotEmpty && selectedAgeFormat != null) {
       final double? ageValue = double.tryParse(ageText);
       if (ageValue != null) {
         String result;
         if (selectedAgeFormat == 'Months' && ageValue < 12) {
           final expectedWeight = (ageValue + 9) / 2;
           result = '${expectedWeight.toStringAsFixed(2)} kg';
-        } else
-        if (selectedAgeFormat == 'Years' && ageValue > 0 && ageValue <= 4) {
+        } else if (selectedAgeFormat == 'Years' &&
+            ageValue > 0 &&
+            ageValue <= 4) {
           final expectedWeight = 2 * (ageValue + 5);
           result = '${expectedWeight.toStringAsFixed(2)} kg';
-        } else
-        if (selectedAgeFormat == 'Years' && ageValue > 4 && ageValue <= 14) {
+        } else if (selectedAgeFormat == 'Years' &&
+            ageValue > 4 &&
+            ageValue <= 14) {
           final expectedWeight = 4 * ageValue;
           result = '${expectedWeight.toStringAsFixed(2)} kg';
         } else {
@@ -96,6 +84,8 @@ class WeightForAgePageState extends State<WeightForAgePage> {
             'type': 'Weight for Age Calculation',
             'result': result,
             'time': DateTime.now().toString(),
+            'age': ageValue,
+            'ageFormat': selectedAgeFormat,
           };
 
           calculationHistory.add(calculation);
@@ -108,7 +98,7 @@ class WeightForAgePageState extends State<WeightForAgePage> {
       }
     } else {
       setState(() {
-        expectedWeightAge = "Please enter a child's age.";
+        expectedWeightAge = "Please enter a child's age and select age format.";
       });
     }
   }
@@ -116,15 +106,22 @@ class WeightForAgePageState extends State<WeightForAgePage> {
   @override
   Widget build(BuildContext context) {
     Provider.of<ThemeProvider>(context);
+    // Extract arguments from route
+    final Map<String, dynamic>? args =
+    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      // Access the arguments
+      final String? age = args['age'];
+      final String? ageFormat = args['ageFormat'];
+      // Use the arguments as needed
+      print('Age: $age, Age Format: $ageFormat');
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'EXPECTED WEIGHT FOR AGE',
-          style: Theme
-              .of(context)
-              .textTheme
-              .titleMedium,
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: true,
         elevation: 0,
@@ -135,23 +132,21 @@ class WeightForAgePageState extends State<WeightForAgePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              CustomInfoTextWidget(
+              const CustomInfoTextWidget(
                 text: 'Select the age format:\n'
-                    '"Months" for age below 1 year\n'
-                    '"Years" for age 1 year and above',
+                    '"Months" for age 0 to 11 months\n'
+                    '"Years" for age 1 year to 14 years',
               ),
               const SizedBox(height: 20),
               CustomDropdown(
-                value: selectedAgeFormat.isEmpty ? null : selectedAgeFormat,
-                items: <String>['Months', 'Years'],
+                value: selectedAgeFormat,
+                items: const <String>['Months', 'Years'],
                 onChanged: (String? value) {
-                  if (value != null) {
-                    setState(() {
-                      selectedAgeFormat = value;
-                    });
-                    widget.onAgeFormatChanged(value);
-                  }
-                }, hint: 'Select Age Format',
+                  setState(() {
+                    selectedAgeFormat = value;
+                  });
+                },
+                hint: 'Select Age Format',
               ),
               const SizedBox(height: 20),
               CustomTextField(
