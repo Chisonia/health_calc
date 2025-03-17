@@ -25,15 +25,15 @@ class ResultContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final double adaptivePadding = screenWidth * 0.02;
-    final double adaptiveFontSize = screenWidth * 0.045;
+    final double adaptiveFontSize = screenWidth * 0.03;
 
     final defaultLabelStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: adaptiveFontSize);
     final defaultResultStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: adaptiveFontSize);
 
     return Padding(
       padding: padding ?? EdgeInsets.symmetric(vertical: adaptivePadding),
-      child: Row(
-        mainAxisAlignment: mainAxisAlignment,
+      child: Wrap(
+        alignment: WrapAlignment.center,
         children: [
           Text(
             "$label ",
@@ -41,6 +41,8 @@ class ResultContainer extends StatelessWidget {
           ),
           Text(
             result,
+            softWrap: true,
+            overflow: TextOverflow.visible,
             style: resultStyle ?? defaultResultStyle,
           ),
         ],

@@ -25,7 +25,7 @@ class CustomTextField extends StatelessWidget {
     Key? key,
     required this.label,
     required this.controller,
-    this.keyboardType = TextInputType.text,
+    this.keyboardType = TextInputType.number,
     this.textInputAction = TextInputAction.next,
     this.textAlign = TextAlign.start,
     this.obscureText = false,

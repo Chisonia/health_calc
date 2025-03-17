@@ -28,7 +28,6 @@ class HistoryPageState extends State<HistoryPage> {
   Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final String? encodedData = prefs.getString(_historyKey);
-
     if (encodedData != null) {
       setState(() {
         _calculationHistory =
@@ -95,8 +94,7 @@ class HistoryPageState extends State<HistoryPage> {
         itemBuilder: (context, index) {
           final calculation = _calculationHistory[index];
           final iconPath = _getIconPath(calculation['type']);
-          final formattedTime = DateTime.parse(calculation['time'])
-              .toLocal()
+          final formattedTime = DateTime.parse(calculation['time']).toLocal()
               .toString()
               .split('.')[0];
 
@@ -112,18 +110,20 @@ class HistoryPageState extends State<HistoryPage> {
               title: Text(
                 calculation['type'],
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontSize: isSmallScreen ? 16 : 20,
+                  fontSize: isSmallScreen ? 16:20,
                 ),
               ),
               subtitle: Text(
                 calculation['result'],
-                style: TextStyle(fontSize: isSmallScreen ? 12 : 16),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: isSmallScreen ? 12 : 16),
               ),
               trailing: Text(
                 formattedTime,
-                style: TextStyle(
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
-                  fontSize: isSmallScreen ? 12 : 14,
+                  fontSize: isSmallScreen
+                      ? 8
+                      : Theme.of(context).textTheme.bodySmall?.fontSize,
                 ),
               ),
             ),
@@ -136,7 +136,9 @@ class HistoryPageState extends State<HistoryPage> {
           child: Text(
             'No history available',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontSize: isSmallScreen ? 14 : 18,
+                fontSize: isSmallScreen
+                    ? 14
+                    : Theme.of(context).textTheme.bodySmall?.fontSize,
             ),
             textAlign: TextAlign.center,
           ),

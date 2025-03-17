@@ -32,19 +32,29 @@ class CustomCalculationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get screen width and height
+    final screenWidth = MediaQuery.of(context).size.width;
+
+
+    // Adjust sizes dynamically based on screen width
+    double calculatedButtonSize = buttonSize ?? screenWidth * 0.12;
+    double calculatedIconSize = iconSize ?? screenWidth * 0.06;
+    double calculatedFontSize = screenWidth * 0.04;
+
     final defaultTextStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
       fontWeight: FontWeight.bold,
+      fontSize: calculatedFontSize,
     );
 
     return Padding(
-      padding: padding ?? const EdgeInsets.all(8.0),
+      padding: padding ?? EdgeInsets.all(screenWidth * 0.02), // Scaled padding
       child: Column(
         mainAxisAlignment: mainAxisAlignment,
         crossAxisAlignment: crossAxisAlignment,
         children: [
           SizedBox(
-            width: buttonSize ?? 48, // Default FAB size
-            height: buttonSize ?? 48,
+            width: calculatedButtonSize,
+            height: calculatedButtonSize,
             child: FloatingActionButton(
               onPressed: onPressed,
               backgroundColor: buttonColor ?? Colors.deepPurple,
@@ -52,8 +62,8 @@ class CustomCalculationButton extends StatelessWidget {
               child: Image.asset(
                 alignment: Alignment.center,
                 assetIconPath,
-                width: iconSize ?? 32, // Adjusted icon size to fit within the FAB
-                height: iconSize ?? 32,
+                width: calculatedIconSize,
+                height: calculatedIconSize,
                 color: iconColor,
                 fit: BoxFit.contain, // Ensure the image fits well
               ),

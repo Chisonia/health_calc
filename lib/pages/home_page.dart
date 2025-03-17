@@ -98,7 +98,7 @@ class HomePageState extends State<HomePage> {
 
     return SingleChildScrollView(
       child: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
+        padding: EdgeInsets.all(screenWidth * 0.03),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -116,8 +116,8 @@ class HomePageState extends State<HomePage> {
               crossAxisCount: crossAxisCount,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
               children: [
                 _buildCalculationButton("BMI", "assets/icons/bmi.png", '/bmi'),
                 _buildCalculationButton("WFA", "assets/icons/child.png", '/wfa'),
@@ -151,11 +151,11 @@ class HomePageState extends State<HomePage> {
                 String iconPath = getIconPath(entry['type']!);
                 return ListTile(
                   leading: Image.asset(iconPath, width: 24, height: 24),
-                  title: Text(entry['type']!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                  subtitle: Text(entry['result']!, style: const TextStyle(fontSize: 12)),
+                  title: Text(entry['type']!, style: Theme.of(context).textTheme.headlineMedium),
+                  subtitle: Text(entry['result']!, style: Theme.of(context).textTheme.bodySmall),
                   trailing: Text(
                     DateTime.parse(entry['time']!).toLocal().toString().split('.')[0],
-                    style: const TextStyle(fontStyle: FontStyle.italic),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 );
               },
